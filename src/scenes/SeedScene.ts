@@ -36,10 +36,6 @@ class SeedScene extends Scene {
         const lights = new BasicLights();
         this.add(land, flower, lights);
     }
-
-    update(timeStamp: number): void {
-        
-    }
 }
 
 export default SeedScene;
