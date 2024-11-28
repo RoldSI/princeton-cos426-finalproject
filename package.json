@@ -1,20 +1,22 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
-    "repository": "cos426finalproject-vite",
-    "name": "lower-case-dashed-name-of-project",
+    "repository": "shadow-spy",
+    "name": "shadow-spy",
     "type": "module",
-    "version": "0.1.0",
-    "title": "PROJECT TITLE HERE",
-    "description": "SHORT DESCRIPTION OF PROJECT HERE. ONE TO TWO SENTENCES MAX",
+    "version": "0.1.1",
+    "title": "Shadow Spy",
+    "description": "You shall find your opponent and spy on him.",
     "keywords": [
         "Princeton",
         "graphics",
         "three.js",
         "COS 426",
-        "keywor0d",
-        "keyword1",
-        "keyword2-etc",
-        "but this last entry CANNOT have a comma after it ->"
+        "game",
+        "spy",
+        "shadow",
+        "dark",
+        "suspense",
+        "amazing"
     ],
     "scripts": {
         "start": "vite",
