@@ -2,7 +2,7 @@ import { Scene, Color, Vector3 } from 'three';
 
 import Flower from '../objects/Flower';
 import Land from '../objects/Land';
-import BasicLights from '../lights/BasicLights';
+import BasicLights from '../lights/basicFlashlight';
 
 // Define an object type which describes each object in the update list
 // type UpdateChild = {
@@ -49,8 +49,8 @@ class SeedScene extends Scene {
         // Add meshes to scene
         const land = new Land();
         const flower = new Flower();
-        const lights = new BasicLights();
-        this.add(land, flower, lights);
+        // const lights = new BasicLights();
+        this.add(land, flower);
     }
 
     update(_timeStamp: number): void {

@@ -1,5 +1,6 @@
 import { WebGLRenderer, PerspectiveCamera, Vector3 } from 'three';
 import SeedScene from './scenes/Scene';
+import BasicFlashlight from './lights/basicFlashlight';
 
 export class GamePlay {
     scene: SeedScene;
@@ -13,9 +14,11 @@ export class GamePlay {
 
     constructor() {
         // Initialize core ThreeJS components
-        this.scene = new SeedScene();
         this.camera = new PerspectiveCamera();
         this.camera.rotation.order = 'YXZ';
+        this.camera.add(new BasicFlashlight());
+        this.scene = new SeedScene();
+        this.scene.add(this.camera);
         this.renderer = new WebGLRenderer({ antialias: true });
 
         // Set up renderer, canvas, and minor CSS adjustments
@@ -57,12 +60,12 @@ export class GamePlay {
     }
 
     generate(): void {
-        console.log('Generating game!');
+        console.log('Generating game/scene!');
         this.scene.world = {
             ground_color: '#7ec0ee'
         };
         this.generated = true;
-        console.log('Game generated!');
+        console.log('Game/scene generated!');
     }
 
     start(): void {
