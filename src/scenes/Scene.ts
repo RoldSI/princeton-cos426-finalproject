@@ -1,20 +1,30 @@
-import { Scene, Color } from 'three';
+import { Scene, Color, Vector3 } from 'three';
 
 import Flower from '../objects/Flower';
 import Land from '../objects/Land';
 import BasicLights from '../lights/BasicLights';
 
 // Define an object type which describes each object in the update list
-type UpdateChild = {
-    // Each object *might* contain an update function
-    update?: (timeStamp: number) => void;
+// type UpdateChild = {
+//     // Each object *might* contain an update function
+//     update?: (timeStamp: number) => void;
+// };
+
+export type PlayerState = {
+    position: THREE.Vector3;
+    orientation: {
+        x: number;
+        y: number;
+    };
+    score: number;
 };
 
 class SeedScene extends Scene {
     // Define the type of the state field
-    state: {
-        rotationSpeed: number;
-        updateList: UpdateChild[];
+    player_me: PlayerState;
+    player_other: PlayerState | undefined;
+    world: undefined | {
+        ground_color: string;
     };
 
     constructor() {
@@ -22,10 +32,16 @@ class SeedScene extends Scene {
         super();
 
         // Init state
-        this.state = {
-            rotationSpeed: 1,
-            updateList: [],
+        this.player_me = {
+            position: new Vector3(0, 0, 0),
+            orientation: {
+                x: 0,
+                y: 0
+            },
+            score: 0
         };
+        this.player_other = undefined;
+        this.world = undefined;
 
         // Set background to a nice color
         this.background = new Color(0x7ec0ee);
