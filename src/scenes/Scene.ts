@@ -45,6 +45,24 @@ class BaseScene extends Scene {
         this.add(land, flower);
     }
 
+    static generate(): BaseScene {
+        console.log('Generating game/scene!');
+
+        const scene: BaseScene = new BaseScene();
+
+        console.log('Game/scene generated!');
+
+        return scene;
+    }
+
+    toJSON(): any {
+        return {};
+    }
+
+    static fromJSON(_json: any): BaseScene {
+        return new BaseScene();
+    }
+
     update(_timeStamp: number): void {
         
     }

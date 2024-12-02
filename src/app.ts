@@ -10,17 +10,22 @@ import { Connectivity } from './connectivity/connectivity';
 import { SplashScreen } from './menu';
 import { GamePlay } from './gameplay';
 import StateMachine, { StateMap } from './utilities/statemachine';
+import Player from './objects/player/player';
+import BaseScene from './scenes/Scene';
 
 // global state
 export const connectivity = new Connectivity();
 export const splashScreen = new SplashScreen();
-export const gamePlay = new GamePlay();
-export let globalState: {
+export const globalState: {
     playerType: 'A' | 'B' | undefined;
     startOther: boolean;
+    scene: BaseScene | undefined;
+    gamePlay: GamePlay | undefined;
 } = {
     playerType: undefined,
-    startOther: false
+    startOther: false,
+    scene: undefined,
+    gamePlay: undefined
 };
 
 const States: StateMap = {
@@ -45,27 +50,31 @@ const States: StateMap = {
     A_INIT: {
         enter() {
             console.log("Entering A_INIT");
+            // generate players
+            const playerA = new Player();
+            const playerB = new Player();
+            // generate scene
+            const scene = BaseScene.generate();
+            globalState.scene = scene;
+            // send
             connectivity.sendData({
-                type: 'player',
-                content: gamePlay.scene.player_me
+                type: 'init',
+                content: {
+                    playerA: playerA.toJSON(),
+                    playerB: playerB.toJSON(),
+                    scene: scene.toJSON()
+                }
             });
+            connectivity.sendData({
+                type: 'start'
+            });
+            // gameplay
+            globalState.gamePlay = new GamePlay(scene, playerA, playerB);
         },
         update() {
             console.log("Updating state if necessary");
-            if (!gamePlay.generated) {
-                gamePlay.generate();
-                connectivity.sendData({
-                    type: 'world',
-                    content: gamePlay.scene.world
-                });
-            }
-            if(gamePlay.scene.player_other != undefined) {
-                connectivity.sendData({
-                    type: 'start'
-                });
-                if (globalState.startOther) {
-                    gameStateMachine.changeState("GAMEPLAY");
-                }
+            if (globalState.startOther) {
+                gameStateMachine.changeState("GAMEPLAY");
             }
         },
         exit() {
@@ -75,14 +84,10 @@ const States: StateMap = {
     B_INIT: {
         enter() {
             console.log("Entering B_INIT");
-            connectivity.sendData({
-                type: 'player',
-                content: gamePlay.scene.player_me
-            });
         },
         update() {
             console.log("Updating state if necessary");
-            if (gamePlay.scene.world != undefined && gamePlay.scene.player_other != undefined) {
+            if (globalState.gamePlay != undefined) {
                 connectivity.sendData({
                     type: 'start'
                 });
@@ -98,14 +103,14 @@ const States: StateMap = {
     GAMEPLAY: {
         enter() {
             console.log("Entering Gameplay");
-            gamePlay.start();
+            globalState.gamePlay!.start();
         },
         update() {
             console.log("Updating state if necessary");
         },
         exit() {
             console.log("Exiting Gameplay");
-            gamePlay.stop();
+            globalState.gamePlay!.stop();
         }
     },
     WIN: {

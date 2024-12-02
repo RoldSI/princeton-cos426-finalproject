@@ -1,5 +1,8 @@
 import Peer, { DataConnection } from 'peerjs';
-import { gamePlay, gameStateMachine, globalState } from '../app';
+import { gameStateMachine, globalState } from '../app';
+import { GamePlay } from '../gameplay';
+import BaseScene from '../scenes/Scene';
+import Player from '../objects/player/player';
 
 export class Connectivity {
     public peer: Peer;
@@ -50,11 +53,10 @@ export class Connectivity {
         this.connection.on('data', (data: any) => {
             console.log('Received:', data);
             switch (data.type) {
-                case 'player':
-                    gamePlay.scene.player_other = data.content;
-                    break;
-                case 'world':
-                    gamePlay.scene.world = data.content;
+                case 'init':
+                    const {playerA, playerB, scene} = data.content;
+                    globalState.scene = BaseScene.fromJSON(scene);
+                    globalState.gamePlay = new GamePlay(globalState.scene, Player.fromJSON(playerB), Player.fromJSON(playerA));
                     break;
                 case 'start':
                     globalState.startOther = true;
@@ -68,13 +70,6 @@ export class Connectivity {
         this.connection.on('open', () => {
             console.log('Data channel open!');
             gameStateMachine.update();
-            // this.sendData({
-            //     type: 'player',
-            //     content: gamePlay.scene.player_me
-            // });
-            // this.sendData({
-            //     type: 'start'
-            // });
         });
 
         this.connection.on('close', () => {
