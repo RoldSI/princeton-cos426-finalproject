@@ -1,14 +1,7 @@
 import { Scene, Color, Vector3 } from 'three';
 
-import Flower from '../objects/Flower';
-import Land from '../objects/Land';
-import BasicLights from '../lights/basicFlashlight';
-
-// Define an object type which describes each object in the update list
-// type UpdateChild = {
-//     // Each object *might* contain an update function
-//     update?: (timeStamp: number) => void;
-// };
+import Flower from '../objects/flower/Flower';
+import Land from '../objects/land/Land';
 
 export type PlayerState = {
     position: THREE.Vector3;
@@ -19,7 +12,7 @@ export type PlayerState = {
     score: number;
 };
 
-class SeedScene extends Scene {
+class BaseScene extends Scene {
     // Define the type of the state field
     player_me: PlayerState;
     player_other: PlayerState | undefined;
@@ -49,13 +42,32 @@ class SeedScene extends Scene {
         // Add meshes to scene
         const land = new Land();
         const flower = new Flower();
-        // const lights = new BasicLights();
         this.add(land, flower);
     }
 
     update(_timeStamp: number): void {
         
     }
+
+    getXMin(): number {
+        return -10;
+    }
+
+    getXMax(): number {
+        return 10;
+    }
+
+    getZMin(): number {
+        return -10;
+    }
+
+    getZMax(): number {
+        return 10;
+    }
+
+    getHeight(_x: number, _z: number): number {
+        return 0;
+    }
 }
 
-export default SeedScene;
+export default BaseScene;
