@@ -1,24 +1,21 @@
-import { Scene } from 'three';
-
-import Flower from '../objects/flower/Flower';
-import Land from '../objects/land/Land';
+import { Mesh, MeshBasicMaterial, PlaneGeometry, Scene } from 'three';
 
 class BaseScene extends Scene {
 
     constructor() {
         // Call parent Scene() constructor
         super();
-
-        // Add meshes to scene
-        const land = new Land();
-        const flower = new Flower();
-        this.add(land, flower);
     }
 
     static generate(): BaseScene {
         console.log('Generating game/scene!');
 
         const scene: BaseScene = new BaseScene();
+        const geometry = new PlaneGeometry(20, 20);
+        const material = new MeshBasicMaterial({ color: 0x808080 });
+        const plane = new Mesh(geometry, material);
+        plane.rotation.x = -Math.PI / 2;
+        scene.add(plane);
 
         console.log('Game/scene generated!');
 
