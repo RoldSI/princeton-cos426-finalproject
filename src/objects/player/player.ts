@@ -17,7 +17,6 @@ class Player extends Group {
 
         const loader = new GLTFLoader();
         loader.load(MODEL, (gltf) => {
-            // gltf.scene.position.z += 1;
             this.add(gltf.scene);
         });
 
