@@ -61,6 +61,9 @@ export class Connectivity {
                 case 'start':
                     globalState.startOther = true;
                     break;
+                case 'player':
+                    globalState.gamePlay!.player_other.updateFromJSON(data.content);
+                    break;
                 default:
                     console.error('Unknown data type:', data.type);
             }
