@@ -1,6 +1,6 @@
 import { Group, PerspectiveCamera, AudioListener, Object3D } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
-import { globalState } from '../../app';
+import { connectivity, globalState } from '../../app';
 
 import MODEL from './player.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -10,6 +10,7 @@ class Player extends Group {
     head: Object3D;
     audioListener: AudioListener;
     score: number;
+    lastUpdate: number = 0;
 
     constructor(_xPosition: number = 0, _zPosition: number = 0) {
         super();
@@ -53,6 +54,22 @@ class Player extends Group {
         return player;
     }
 
+    updateFromJSON(json: any): void {
+        this.setPosition(json.position.x, json.position.z);
+        this.setOrientation(json.orientation.x, json.orientation.y);
+        this.score = json.score;
+    }
+
+    update(timeStamp: number): void {
+        const interval = 100;
+        if (timeStamp - this.lastUpdate > interval) {
+            connectivity.sendData({
+                type: 'player',
+                content: this.toJSON()
+            });
+        }
+    }
+
     getPosition(): { x: number; y: number; z: number } {
         return {
             x: this.position.x,
@@ -76,6 +93,11 @@ class Player extends Group {
         this.rotation.y += y;
         this.head.rotation.x += x;
         this.head.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.head.rotation.x))
+    }
+
+    setOrientation(x: number, y: number): void {
+        this.rotation.y = y;
+        this.head.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, x))
     }
 }
 

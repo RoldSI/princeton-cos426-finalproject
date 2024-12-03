@@ -1,4 +1,4 @@
-import { WebGLRenderer, Vector3, Scene } from 'three';
+import { WebGLRenderer, Vector3 } from 'three';
 import BaseScene from './scenes/Scene';
 import Player from './objects/player/player';
 
@@ -8,7 +8,7 @@ export class GamePlay {
     // internal state
     scene: BaseScene;
     player: Player;
-    player_other: Player | undefined;
+    player_other: Player;
     renderer: WebGLRenderer;
     canvas: HTMLCanvasElement;
     previousTime: DOMHighResTimeStamp;
@@ -21,6 +21,7 @@ export class GamePlay {
         this.player_other = player_other;
 
         this.scene.add(this.player);
+        this.scene.add(this.player_other);
 
         // Set up renderer, canvas, and minor CSS adjustments
         this.renderer = new WebGLRenderer({ antialias: true });
@@ -91,6 +92,7 @@ export class GamePlay {
     
         this.renderer.render(this.scene, this.player.camera);
         this.scene.update && this.scene.update(timeStamp);
+        this.player.update && this.player.update(timeStamp);
         window.requestAnimationFrame(this.onAnimationFrameHandler);
     }
 
