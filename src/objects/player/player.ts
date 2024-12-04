@@ -1,4 +1,4 @@
-import { Group, PerspectiveCamera, AudioListener, Object3D } from 'three';
+import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3 } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, globalState } from '../../app';
 
@@ -17,7 +17,6 @@ class Player extends Group {
 
         const loader = new GLTFLoader();
         loader.load(MODEL, (gltf) => {
-            // gltf.scene.position.z += 1;
             this.add(gltf.scene);
         });
 
@@ -78,8 +77,16 @@ class Player extends Group {
         };
     }
 
+    modifyPosition(direction: Vector3): void {
+        this.setPosition(this.position.x + direction.x, this.position.z + direction.z);
+        // this.position.add(direction);
+        // this.position.y = globalState.scene!.getHeight(this.position.x, this.position.z);
+    }
+
     setPosition(x: number, z: number): void {
-        this.position.set(x, globalState.scene!.getHeight(x, z), z);
+        const x_restircted = Math.max(globalState.scene!.getXMin(), Math.min(globalState.scene!.getXMax(), x));
+        const z_restircted = Math.max(globalState.scene!.getZMin(), Math.min(globalState.scene!.getZMax(), z));
+        this.position.set(x_restircted, globalState.scene!.getHeight(x_restircted, z_restircted), z_restircted);
     }
 
     getOrientation(): { x: number; y: number } {

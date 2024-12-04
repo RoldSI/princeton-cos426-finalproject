@@ -1,54 +1,21 @@
-import { Scene, Color, Vector3 } from 'three';
-
-import Flower from '../objects/flower/Flower';
-import Land from '../objects/land/Land';
-
-export type PlayerState = {
-    position: THREE.Vector3;
-    orientation: {
-        x: number;
-        y: number;
-    };
-    score: number;
-};
+import { Mesh, MeshLambertMaterial, PlaneGeometry, Scene } from 'three';
 
 class BaseScene extends Scene {
-    // Define the type of the state field
-    player_me: PlayerState;
-    player_other: PlayerState | undefined;
-    world: undefined | {
-        ground_color: string;
-    };
 
     constructor() {
         // Call parent Scene() constructor
         super();
-
-        // Init state
-        this.player_me = {
-            position: new Vector3(0, 0, 0),
-            orientation: {
-                x: 0,
-                y: 0
-            },
-            score: 0
-        };
-        this.player_other = undefined;
-        this.world = undefined;
-
-        // Set background to a nice color
-        this.background = new Color(0x7ec0ee);
-
-        // Add meshes to scene
-        const land = new Land();
-        const flower = new Flower();
-        this.add(land, flower);
     }
 
     static generate(): BaseScene {
         console.log('Generating game/scene!');
 
         const scene: BaseScene = new BaseScene();
+        const geometry = new PlaneGeometry(160, 160);
+        const material = new MeshLambertMaterial({ color: 0x808080 });
+        const plane = new Mesh(geometry, material);
+        plane.rotation.x = -Math.PI / 2;
+        scene.add(plane);
 
         console.log('Game/scene generated!');
 
@@ -60,7 +27,7 @@ class BaseScene extends Scene {
     }
 
     static fromJSON(_json: any): BaseScene {
-        return new BaseScene();
+        return BaseScene.generate();
     }
 
     update(_timeStamp: number): void {
@@ -68,19 +35,19 @@ class BaseScene extends Scene {
     }
 
     getXMin(): number {
-        return -10;
+        return -80;
     }
 
     getXMax(): number {
-        return 10;
+        return 80;
     }
 
     getZMin(): number {
-        return -10;
+        return -80;
     }
 
     getZMax(): number {
-        return 10;
+        return 80;
     }
 
     getHeight(_x: number, _z: number): number {
