@@ -84,11 +84,12 @@ export class GamePlay {
         this.previousTime = timeStamp;
         const forward = new Vector3(0, 0, -1).applyQuaternion(this.player.quaternion).applyQuaternion(this.player.camera.quaternion); // Forward direction
         const right = new Vector3(1, 0, 0).applyQuaternion(this.player.quaternion).applyQuaternion(this.player.camera.quaternion); // Right direction
-        if (this.keys.w) this.player.position.add(forward.multiplyScalar(this.movementSpeed * delta));
-        if (this.keys.s) this.player.position.add(forward.multiplyScalar(-this.movementSpeed * delta));
-        if (this.keys.a) this.player.position.add(right.multiplyScalar(-this.movementSpeed * delta));
-        if (this.keys.d) this.player.position.add(right.multiplyScalar(this.movementSpeed * delta));
-        this.player.position.y = this.scene.getHeight(this.player.position.x, this.player.position.z);
+        const positionUpdate = new Vector3();
+        if (this.keys.w) positionUpdate.add(forward.multiplyScalar(this.movementSpeed * delta));
+        if (this.keys.s) positionUpdate.add(forward.multiplyScalar(-this.movementSpeed * delta));
+        if (this.keys.a) positionUpdate.add(right.multiplyScalar(-this.movementSpeed * delta));
+        if (this.keys.d) positionUpdate.add(right.multiplyScalar(this.movementSpeed * delta));
+        this.player.modifyPosition(positionUpdate);
     
         this.renderer.render(this.scene, this.player.camera);
         this.scene.update && this.scene.update(timeStamp);

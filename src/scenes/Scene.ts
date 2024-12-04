@@ -1,4 +1,4 @@
-import { Mesh, MeshBasicMaterial, PlaneGeometry, Scene } from 'three';
+import { Mesh, MeshLambertMaterial, PlaneGeometry, Scene } from 'three';
 
 class BaseScene extends Scene {
 
@@ -11,8 +11,8 @@ class BaseScene extends Scene {
         console.log('Generating game/scene!');
 
         const scene: BaseScene = new BaseScene();
-        const geometry = new PlaneGeometry(20, 20);
-        const material = new MeshBasicMaterial({ color: 0x808080 });
+        const geometry = new PlaneGeometry(160, 160);
+        const material = new MeshLambertMaterial({ color: 0x808080 });
         const plane = new Mesh(geometry, material);
         plane.rotation.x = -Math.PI / 2;
         scene.add(plane);
@@ -27,7 +27,7 @@ class BaseScene extends Scene {
     }
 
     static fromJSON(_json: any): BaseScene {
-        return new BaseScene();
+        return BaseScene.generate();
     }
 
     update(_timeStamp: number): void {
@@ -35,19 +35,19 @@ class BaseScene extends Scene {
     }
 
     getXMin(): number {
-        return -10;
+        return -80;
     }
 
     getXMax(): number {
-        return 10;
+        return 80;
     }
 
     getZMin(): number {
-        return -10;
+        return -80;
     }
 
     getZMax(): number {
-        return 10;
+        return 80;
     }
 
     getHeight(_x: number, _z: number): number {
