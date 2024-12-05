@@ -6,37 +6,33 @@ export class GamePlay {
     // config params
     movementSpeed: number; // in m/s
     // internal state
-    scene: BaseScene;
+    private scene: BaseScene;
     player: Player;
     player_other: Player;
-    renderer: WebGLRenderer;
-    canvas: HTMLCanvasElement;
-    previousTime: DOMHighResTimeStamp;
-    keys: { [key: string]: boolean } = { w: false, a: false, s: false, d: false };
+    private renderer: WebGLRenderer;
+    private canvas: HTMLCanvasElement;
+    private previousTime: DOMHighResTimeStamp;
+    private keys: { [key: string]: boolean } = { w: false, a: false, s: false, d: false };
 
-    minimapCamera: OrthographicCamera;
-    minimapRenderer: WebGLRenderer;
-    minimapScene: Scene;
-    playerDot: Mesh;
-    scoreElement: HTMLElement;
+    private minimapCamera: OrthographicCamera;
+    private minimapRenderer: WebGLRenderer;
+    private minimapScene: Scene;
+    private playerDot: Mesh;
+    private scoreElement: HTMLElement;
 
-    constructor(scene: BaseScene, player: Player, player_other: Player, movementSpeed: number = 3) {
-        this.movementSpeed = movementSpeed;
-        this.scene = scene;
-        this.player = player;
-        this.player_other = player_other;
-
-        this.scene.add(this.player);
-        this.scene.add(this.player_other);
-
-        // Set up renderer, canvas, and minor CSS adjustments
-        this.renderer = new WebGLRenderer({ antialias: true });
+    setupFirstPersonRenderer(): void {
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.canvas = this.renderer.domElement;
         this.canvas.style.display = 'block'; // Removes padding below canvas
         document.body.style.margin = '0'; // Removes margin around page
         document.body.style.overflow = 'hidden'; // Fix scrolling
+    }
 
+    constructFirstPersonScene(): void {
+        this.scene.add(this.player);
+        this.scene.add(this.player_other);
+    }
+
+    setupMouseControls(): void {
         this.canvas.addEventListener('click', () => {
             this.canvas.requestPointerLock();
         });
@@ -49,6 +45,9 @@ export class GamePlay {
                 )
             }
         });
+    }
+
+    setupKeyboardControls(): void {
         window.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.key === 'w') this.keys.w = true;
             if (event.key === 'a') this.keys.a = true;
@@ -61,29 +60,53 @@ export class GamePlay {
             if (event.key === 's') this.keys.s = false;
             if (event.key === 'd') this.keys.d = false;
         });
-        
-        this.previousTime = performance.now();
+    }
 
-        this.minimapScene = new Scene();
+    handleKeyboardControls(timeStamp: number): void {
+        const delta = (timeStamp - this.previousTime) / 1000; // Convert ms to seconds
+        this.previousTime = timeStamp;
+
+        const forward = new Vector3(0, 0, -1).applyQuaternion(this.player.quaternion); // Forward direction
+        const right = new Vector3(1, 0, 0).applyQuaternion(this.player.quaternion); // Right direction
+        const positionUpdate = new Vector3();
+        if (this.keys.w) positionUpdate.add(forward.multiplyScalar(this.movementSpeed * delta));
+        if (this.keys.s) positionUpdate.add(forward.multiplyScalar(-this.movementSpeed * delta));
+        if (this.keys.a) positionUpdate.add(right.multiplyScalar(-this.movementSpeed * delta));
+        if (this.keys.d) positionUpdate.add(right.multiplyScalar(this.movementSpeed * delta));
+        this.player.modifyPosition(positionUpdate);
+        this.playerDot.position.set(this.player.position.x, 0, this.player.position.z);
+    }
+
+    constructMinimapScene(): void {
         const halfSize = this.scene.getHalfSize();
-        this.minimapCamera = new OrthographicCamera(-halfSize, halfSize, halfSize, -halfSize, 1, 100);
+        this.minimapCamera.left = -halfSize;
+        this.minimapCamera.right = halfSize;
+        this.minimapCamera.top = halfSize;
+        this.minimapCamera.bottom = -halfSize;
+        this.minimapCamera.updateProjectionMatrix();
+
         this.minimapCamera.position.set(0, 20, 0);
         this.minimapCamera.lookAt(0, 0, 0);
 
-        this.playerDot = new Mesh(
+        this.minimapScene.add(this.playerDot);
+    }
+
+    getPlayerDot(): Mesh {
+        return new Mesh(
             new SphereGeometry(this.scene.getHalfSize()/20, 16, 1), // Small size for the dot
             new MeshBasicMaterial({ color: 0xff0000 }) // Red dot for visibility
         );
-        this.minimapScene.add(this.playerDot);
+    }
 
-        this.minimapRenderer = new WebGLRenderer({ antialias: true });
+    setupMinimapRenderer(): void {
         this.minimapRenderer.setSize(200, 200); // Minimap size in pixels
         this.minimapRenderer.domElement.style.position = 'absolute';
         this.minimapRenderer.domElement.style.bottom = '10px'; // Offset from the bottom
         this.minimapRenderer.domElement.style.right = '10px'; // Offset from the right
         this.minimapRenderer.domElement.style.border = '2px solid white';
+    }
 
-        this.scoreElement = document.createElement('div');
+    constructScoreCounterElement(): void {
         this.scoreElement.style.position = 'absolute';
         this.scoreElement.style.bottom = '220px'; // Position above the minimap
         this.scoreElement.style.right = '10px';
@@ -91,6 +114,32 @@ export class GamePlay {
         this.scoreElement.style.fontSize = '18px';
         this.scoreElement.style.fontFamily = 'Arial, sans-serif';
         this.scoreElement.style.textAlign = 'right'; // Align text to the right
+    }
+
+    constructor(scene: BaseScene, player: Player, player_other: Player, movementSpeed: number = 3) {
+        this.movementSpeed = movementSpeed;
+        this.scene = scene;
+        this.player = player;
+        this.player_other = player_other;
+        this.renderer = new WebGLRenderer({ antialias: true });
+        this.canvas = this.renderer.domElement;
+        this.previousTime = performance.now();
+        this.minimapScene = new Scene();
+        this.minimapCamera = new OrthographicCamera();
+        this.playerDot = this.getPlayerDot();
+        this.minimapRenderer = new WebGLRenderer({ antialias: true });
+        this.scoreElement = document.createElement('div');
+
+        this.setupFirstPersonRenderer();
+        this.constructFirstPersonScene();
+
+        this.setupMouseControls();
+        this.setupKeyboardControls();
+
+        this.setupMinimapRenderer();
+        this.constructMinimapScene();
+
+        this.constructScoreCounterElement();
     }
 
     start(): void {
@@ -118,17 +167,7 @@ export class GamePlay {
     }
 
     onAnimationFrameHandler = (timeStamp: number) => {
-        const delta = (timeStamp - this.previousTime) / 1000; // Convert ms to seconds
-        this.previousTime = timeStamp;
-        const forward = new Vector3(0, 0, -1).applyQuaternion(this.player.quaternion).applyQuaternion(this.player.camera.quaternion); // Forward direction
-        const right = new Vector3(1, 0, 0).applyQuaternion(this.player.quaternion).applyQuaternion(this.player.camera.quaternion); // Right direction
-        const positionUpdate = new Vector3();
-        if (this.keys.w) positionUpdate.add(forward.multiplyScalar(this.movementSpeed * delta));
-        if (this.keys.s) positionUpdate.add(forward.multiplyScalar(-this.movementSpeed * delta));
-        if (this.keys.a) positionUpdate.add(right.multiplyScalar(-this.movementSpeed * delta));
-        if (this.keys.d) positionUpdate.add(right.multiplyScalar(this.movementSpeed * delta));
-        this.player.modifyPosition(positionUpdate);
-        this.playerDot.position.set(this.player.position.x, 0, this.player.position.z);
+        this.handleKeyboardControls(timeStamp);
     
         this.renderer.render(this.scene, this.player.camera);
         this.minimapRenderer.render(this.minimapScene, this.minimapCamera);
@@ -137,6 +176,7 @@ export class GamePlay {
 
         this.scene.update && this.scene.update(timeStamp);
         this.player.update && this.player.update(timeStamp);
+        
         window.requestAnimationFrame(this.onAnimationFrameHandler);
     }
 
