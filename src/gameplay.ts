@@ -1,4 +1,4 @@
-import { WebGLRenderer, Vector3 } from 'three';
+import { WebGLRenderer, Vector3, OrthographicCamera, Scene, Mesh, SphereGeometry, MeshBasicMaterial } from 'three';
 import BaseScene from './scenes/Scene';
 import Player from './objects/player/player';
 
@@ -14,7 +14,13 @@ export class GamePlay {
     previousTime: DOMHighResTimeStamp;
     keys: { [key: string]: boolean } = { w: false, a: false, s: false, d: false };
 
-    constructor(scene: BaseScene, player: Player, player_other: Player, movementSpeed: number = 5) {
+    minimapCamera: OrthographicCamera;
+    minimapRenderer: WebGLRenderer;
+    minimapScene: Scene;
+    playerDot: Mesh;
+    scoreElement: HTMLElement;
+
+    constructor(scene: BaseScene, player: Player, player_other: Player, movementSpeed: number = 3) {
         this.movementSpeed = movementSpeed;
         this.scene = scene;
         this.player = player;
@@ -57,6 +63,34 @@ export class GamePlay {
         });
         
         this.previousTime = performance.now();
+
+        this.minimapScene = new Scene();
+        const halfSize = this.scene.getHalfSize();
+        this.minimapCamera = new OrthographicCamera(-halfSize, halfSize, halfSize, -halfSize, 1, 100);
+        this.minimapCamera.position.set(0, 20, 0);
+        this.minimapCamera.lookAt(0, 0, 0);
+
+        this.playerDot = new Mesh(
+            new SphereGeometry(this.scene.getHalfSize()/20, 16, 1), // Small size for the dot
+            new MeshBasicMaterial({ color: 0xff0000 }) // Red dot for visibility
+        );
+        this.minimapScene.add(this.playerDot);
+
+        this.minimapRenderer = new WebGLRenderer({ antialias: true });
+        this.minimapRenderer.setSize(200, 200); // Minimap size in pixels
+        this.minimapRenderer.domElement.style.position = 'absolute';
+        this.minimapRenderer.domElement.style.bottom = '10px'; // Offset from the bottom
+        this.minimapRenderer.domElement.style.right = '10px'; // Offset from the right
+        this.minimapRenderer.domElement.style.border = '2px solid white';
+
+        this.scoreElement = document.createElement('div');
+        this.scoreElement.style.position = 'absolute';
+        this.scoreElement.style.bottom = '220px'; // Position above the minimap
+        this.scoreElement.style.right = '10px';
+        this.scoreElement.style.color = 'white';
+        this.scoreElement.style.fontSize = '18px';
+        this.scoreElement.style.fontFamily = 'Arial, sans-serif';
+        this.scoreElement.style.textAlign = 'right'; // Align text to the right
     }
 
     start(): void {
@@ -67,6 +101,8 @@ export class GamePlay {
         window.requestAnimationFrame(this.onAnimationFrameHandler);
 
         document.body.appendChild(this.canvas);
+        document.body.appendChild(this.minimapRenderer.domElement);
+        document.body.appendChild(this.scoreElement);
 
         console.log('Game started!');
     }
@@ -75,6 +111,8 @@ export class GamePlay {
         console.log('Stopping game!');
 
         document.body.removeChild(this.canvas);
+        document.body.removeChild(this.minimapRenderer.domElement);
+        document.body.removeChild(this.scoreElement);
 
         console.log('Game stopped!');
     }
@@ -90,8 +128,13 @@ export class GamePlay {
         if (this.keys.a) positionUpdate.add(right.multiplyScalar(-this.movementSpeed * delta));
         if (this.keys.d) positionUpdate.add(right.multiplyScalar(this.movementSpeed * delta));
         this.player.modifyPosition(positionUpdate);
+        this.playerDot.position.set(this.player.position.x, 0, this.player.position.z);
     
         this.renderer.render(this.scene, this.player.camera);
+        this.minimapRenderer.render(this.minimapScene, this.minimapCamera);
+
+        this.scoreElement.innerHTML = `Player: ${this.player.score}<br>Opponent: ${this.player_other.publicScore}`;
+
         this.scene.update && this.scene.update(timeStamp);
         this.player.update && this.player.update(timeStamp);
         window.requestAnimationFrame(this.onAnimationFrameHandler);
