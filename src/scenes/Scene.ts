@@ -34,19 +34,7 @@ class BaseScene extends Scene {
         
     }
 
-    getXMin(): number {
-        return -80;
-    }
-
-    getXMax(): number {
-        return 80;
-    }
-
-    getZMin(): number {
-        return -80;
-    }
-
-    getZMax(): number {
+    getHalfSize(): number {
         return 80;
     }
 

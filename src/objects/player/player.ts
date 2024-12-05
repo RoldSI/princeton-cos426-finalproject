@@ -10,6 +10,7 @@ class Player extends Group {
     head: Object3D;
     audioListener: AudioListener;
     score: number;
+    publicScore: number;
     lastUpdate: number = 0;
 
     constructor(_xPosition: number = 0, _zPosition: number = 0) {
@@ -34,22 +35,22 @@ class Player extends Group {
         this.audioListener = new AudioListener();
         this.camera.add(this.audioListener);
 
-        this.score = 0;
+        this.score = 897;
+        this.publicScore = this.score - 10;
     }
 
     toJSON(): any {
         return {
             position: this.getPosition(),
             orientation: this.getOrientation(),
-            score: this.score
+            score: this.score,
+            publicScore: this.publicScore
         };
     }
 
     static fromJSON(json: any): Player {
         const player = new Player();
-        player.setPosition(json.position.x, json.position.z);
-        player.modifyOrientation(json.orientation.x, json.orientation.y);
-        player.score = json.score;
+        player.updateFromJSON(json);
         return player;
     }
 
@@ -57,6 +58,7 @@ class Player extends Group {
         this.setPosition(json.position.x, json.position.z);
         this.setOrientation(json.orientation.x, json.orientation.y);
         this.score = json.score;
+        this.publicScore = json.publicScore;
     }
 
     update(timeStamp: number): void {
@@ -79,13 +81,12 @@ class Player extends Group {
 
     modifyPosition(direction: Vector3): void {
         this.setPosition(this.position.x + direction.x, this.position.z + direction.z);
-        // this.position.add(direction);
-        // this.position.y = globalState.scene!.getHeight(this.position.x, this.position.z);
     }
 
     setPosition(x: number, z: number): void {
-        const x_restircted = Math.max(globalState.scene!.getXMin(), Math.min(globalState.scene!.getXMax(), x));
-        const z_restircted = Math.max(globalState.scene!.getZMin(), Math.min(globalState.scene!.getZMax(), z));
+        const halfSize = globalState.scene!.getHalfSize();
+        const x_restircted = Math.max(-halfSize, Math.min(halfSize, x));
+        const z_restircted = Math.max(-halfSize, Math.min(halfSize, z));
         this.position.set(x_restircted, globalState.scene!.getHeight(x_restircted, z_restircted), z_restircted);
     }
 
