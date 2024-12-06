@@ -2,7 +2,7 @@ import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster }
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, globalState } from '../../app';
 
-import MODEL from './player.gltf?url';
+import MODEL from './player_model/scene.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class Player extends Group {
