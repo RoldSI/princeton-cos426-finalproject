@@ -15,7 +15,7 @@ class Player extends Group {
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
 
-    constructor(_xPosition: number = 0, _zPosition: number = 0) {
+    constructor(pos: {x: number, z: number}) {
         super();
 
         const loader = new GLTFLoader();
@@ -41,6 +41,8 @@ class Player extends Group {
         this.score = 0;
         this.previousScore = this.score;
         this.publicScore = this.score;
+
+        this.setPosition(pos.x, pos.z);
     }
 
     toJSON(): any {
@@ -53,7 +55,7 @@ class Player extends Group {
     }
 
     static fromJSON(json: any): Player {
-        const player = new Player();
+        const player = new Player({x: json.position.x, z: json.position.z});
         player.updateFromJSON(json);
         return player;
     }

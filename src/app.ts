@@ -56,12 +56,13 @@ const States: StateMap = {
     A_INIT: {
         enter() {
             console.log("Entering A_INIT");
-            // generate players
-            const playerA = new Player();
-            const playerB = new Player();
             // generate scene
             const scene = BaseScene.generate();
             globalState.scene = scene;
+            const startPositions = scene.getStartPositions();
+            // generate players
+            const playerA = new Player(startPositions[0]);
+            const playerB = new Player(startPositions[1]);
             // send
             connectivity.sendData({
                 type: 'init',
