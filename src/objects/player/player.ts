@@ -1,6 +1,6 @@
 import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
-import { connectivity, globalState } from '../../app';
+import { connectivity, gameStateMachine, globalState } from '../../app';
 
 import MODEL from './player.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -12,10 +12,11 @@ class Player extends Group {
     score: number;
     previousScore: number;
     publicScore: number;
+    seeing: boolean;
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
 
-    constructor(_xPosition: number = 0, _zPosition: number = 0) {
+    constructor(pos: {x: number, z: number}) {
         super();
 
         const loader = new GLTFLoader();
@@ -41,6 +42,9 @@ class Player extends Group {
         this.score = 0;
         this.previousScore = this.score;
         this.publicScore = this.score;
+        this.seeing = false;
+
+        this.setPosition(pos.x, pos.z);
     }
 
     toJSON(): any {
@@ -48,12 +52,13 @@ class Player extends Group {
             position: this.getPosition(),
             orientation: this.getOrientation(),
             score: this.score,
-            publicScore: this.publicScore
+            publicScore: this.publicScore,
+            seeing: this.seeing
         };
     }
 
     static fromJSON(json: any): Player {
-        const player = new Player();
+        const player = new Player({x: json.position.x, z: json.position.z});
         player.updateFromJSON(json);
         return player;
     }
@@ -63,6 +68,7 @@ class Player extends Group {
         this.setOrientation(json.orientation.x, json.orientation.y);
         this.score = json.score;
         this.publicScore = json.publicScore;
+        this.seeing = json.seeing;
     }
 
     sendPlayerData(timeStamp: number): void {
@@ -84,8 +90,10 @@ class Player extends Group {
 
         const distance = sourcePosition.distanceTo(targetPosition);
 
-        if (distance > this.flashlight.getDistance())
+        if (distance > this.flashlight.getDistance()) {
+            this.seeing = false;
             return;
+        }
 
         const direction = new Vector3().subVectors(targetPosition, sourcePosition).normalize();
 
@@ -93,8 +101,10 @@ class Player extends Group {
         localizedDirection.add(sourcePosition);
         this.head.worldToLocal(localizedDirection);
         localizedDirection.normalize();
-        if(!this.flashlight.isAligned(localizedDirection))
+        if(!this.flashlight.isAligned(localizedDirection)) {
+            this.seeing = false;
             return;
+        }
 
         const raycaster = new Raycaster();
         raycaster.set(sourcePosition, direction);
@@ -102,9 +112,12 @@ class Player extends Group {
         raycaster.near = 0.1;
 
         const intersections = raycaster.intersectObjects(globalState.scene!.world.children, true);
-        if(intersections.length > 0)
+        if(intersections.length > 0) {
+            this.seeing = false;
             return;
+        }
 
+        this.seeing = true;
         this.score += 1;
     }
 
@@ -115,11 +128,28 @@ class Player extends Group {
         this.previousScore = this.score;
     }
 
+    checkWon(): void {
+        if(this.score >= 500)
+            gameStateMachine.changeState("SETTLING")
+    }
+
+    reposition(): void {
+        if(this.seeing && globalState.gamePlay!.player_other.seeing) {
+            const half = globalState.scene!.getHalfSize();
+            const x = Math.random() * (half*2) - half;
+            const z = Math.random() * (half*2) - half;
+            this.setPosition(x, z);
+        }
+    }
+
     update(timeStamp: number): void {
         this.sendPlayerData(timeStamp);
 
         this.updateScore(timeStamp);
         this.updatePublicScore(timeStamp);
+
+        this.checkWon();
+        this.reposition();
     }
 
     getPosition(): { x: number; y: number; z: number } {

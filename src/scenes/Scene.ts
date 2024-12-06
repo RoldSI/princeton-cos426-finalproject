@@ -25,6 +25,17 @@ class BaseScene extends Scene {
         return scene;
     }
 
+    getStartPositions(): [ { x: number, z: number }, { x: number, z: number } ] {
+        function getRand(x: number): number {
+            return Math.random() * (x - x / 2) + x / 2;
+        }
+        const x = this.getHalfSize();
+        return [
+            { x: getRand(x), z: getRand(x) },
+            { x: -getRand(x), z: -getRand(x) }
+        ];
+    }
+
     toJSON(): any {
         return {};
     }

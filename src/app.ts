@@ -7,23 +7,28 @@
  *
  */
 import { Connectivity } from './connectivity/connectivity';
-import { SplashScreen } from './menu';
+import { SplashScreen } from './splashscreen';
 import { GamePlay } from './gameplay';
 import StateMachine, { StateMap } from './utilities/statemachine';
 import Player from './objects/player/player';
 import BaseScene from './scenes/Scene';
+import { LosingScreen, WinningScreen } from './endscreen';
 
 // global state
 export const connectivity = new Connectivity();
 export const splashScreen = new SplashScreen();
+export const winningScreen = new WinningScreen();
+export const losingScreen = new LosingScreen();
 export const globalState: {
     playerType: 'A' | 'B' | undefined;
     startOther: boolean;
+    endOther: boolean;
     scene: BaseScene | undefined;
     gamePlay: GamePlay | undefined;
 } = {
     playerType: undefined,
     startOther: false,
+    endOther: false,
     scene: undefined,
     gamePlay: undefined
 };
@@ -45,17 +50,19 @@ const States: StateMap = {
         exit() {
             console.log("Exiting Splashscreen");
             splashScreen.hide();
+            globalState.playerType = undefined;
         }
     },
     A_INIT: {
         enter() {
             console.log("Entering A_INIT");
-            // generate players
-            const playerA = new Player();
-            const playerB = new Player();
             // generate scene
             const scene = BaseScene.generate();
             globalState.scene = scene;
+            const startPositions = scene.getStartPositions();
+            // generate players
+            const playerA = new Player(startPositions[0]);
+            const playerB = new Player(startPositions[1]);
             // send
             connectivity.sendData({
                 type: 'init',
@@ -79,6 +86,7 @@ const States: StateMap = {
         },
         exit() {
             console.log("Exiting A_INIT");
+            globalState.startOther = false;
         }
     },
     B_INIT: {
@@ -98,6 +106,7 @@ const States: StateMap = {
         },
         exit() {
             console.log("Exiting B_INIT");
+            globalState.startOther = false;
         }
     },
     GAMEPLAY: {
@@ -106,33 +115,67 @@ const States: StateMap = {
             globalState.gamePlay!.start();
         },
         update() {
-            console.log("Updating state if necessary");
+            console.log("Updating gameplay state if necessary");
+            if(globalState.endOther) {
+                gameStateMachine.changeState("SETTLING");
+            }
         },
         exit() {
             console.log("Exiting Gameplay");
             globalState.gamePlay!.stop();
         }
     },
+    SETTLING: {
+        enter() {
+            console.log("Entering Settling");
+            connectivity.sendData({
+                type: 'end',
+                content: globalState.gamePlay!.player.toJSON()
+            });
+            gameStateMachine.update();
+        },
+        update() {
+            console.log("Updating settling state if necessary");
+            console.log(globalState.endOther);
+            if (globalState.endOther) {
+                if (globalState.gamePlay!.player.score >= globalState.gamePlay!.player_other.score) {
+                    gameStateMachine.changeState("WIN");
+                } else {
+                    gameStateMachine.changeState("LOSE");
+                }
+            }
+        },
+        exit() {
+            console.log("Exiting Settling");
+            globalState.gamePlay = undefined;
+            globalState.endOther = false;
+            globalState.scene = undefined;
+        }
+    },
     WIN: {
         enter() {
             console.log("Entering win");
+            winningScreen.show();
         },
         update() {
             console.log("Updating state if necessary");
         },
         exit() {
             console.log("Exiting win");
+            winningScreen.hide();
         }
     },
     LOSE: {
         enter() {
             console.log("Entering lose");
+            losingScreen.show();
         },
         update() {
             console.log("Updating state if necessary");
         },
         exit() {
             console.log("Exiting lose");
+            losingScreen.hide();
         }
     }
 };
