@@ -1,4 +1,4 @@
-import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3 } from 'three';
+import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, globalState } from '../../app';
 
@@ -10,8 +10,10 @@ class Player extends Group {
     head: Object3D;
     audioListener: AudioListener;
     score: number;
+    previousScore: number;
     publicScore: number;
     lastUpdate: number = 0;
+    flashlight: BasicFlashlight;
 
     constructor(_xPosition: number = 0, _zPosition: number = 0) {
         super();
@@ -30,13 +32,15 @@ class Player extends Group {
         this.head.add(this.camera);
 
         const flashlight = new BasicFlashlight();
+        this.flashlight = flashlight;
         this.head.add(flashlight);
 
         this.audioListener = new AudioListener();
         this.camera.add(this.audioListener);
 
-        this.score = 897;
-        this.publicScore = this.score - 10;
+        this.score = 0;
+        this.previousScore = this.score;
+        this.publicScore = this.score;
     }
 
     toJSON(): any {
@@ -61,7 +65,7 @@ class Player extends Group {
         this.publicScore = json.publicScore;
     }
 
-    update(timeStamp: number): void {
+    sendPlayerData(timeStamp: number): void {
         const interval = 100;
         if (timeStamp - this.lastUpdate > interval) {
             connectivity.sendData({
@@ -69,6 +73,53 @@ class Player extends Group {
                 content: this.toJSON()
             });
         }
+    }
+
+    updateScore(_timeStamp: number): void {
+        const sourcePosition = new Vector3();
+        this.head.getWorldPosition(sourcePosition);
+
+        const targetPosition = new Vector3();
+        globalState.gamePlay!.player_other.head.getWorldPosition(targetPosition);
+
+        const distance = sourcePosition.distanceTo(targetPosition);
+
+        if (distance > this.flashlight.getDistance())
+            return;
+
+        const direction = new Vector3().subVectors(targetPosition, sourcePosition).normalize();
+
+        const localizedDirection = direction.clone();
+        localizedDirection.add(sourcePosition);
+        this.head.worldToLocal(localizedDirection);
+        localizedDirection.normalize();
+        if(!this.flashlight.isAligned(localizedDirection))
+            return;
+
+        const raycaster = new Raycaster();
+        raycaster.set(sourcePosition, direction);
+        raycaster.far = distance;
+        raycaster.near = 0.1;
+
+        const intersections = raycaster.intersectObjects(globalState.scene!.world.children, true);
+        if(intersections.length > 0)
+            return;
+
+        this.score += 1;
+    }
+
+    updatePublicScore(_timeStamp: number): void {
+        if (this.previousScore == this.score) {
+            this.publicScore = this.score;
+        }
+        this.previousScore = this.score;
+    }
+
+    update(timeStamp: number): void {
+        this.sendPlayerData(timeStamp);
+
+        this.updateScore(timeStamp);
+        this.updatePublicScore(timeStamp);
     }
 
     getPosition(): { x: number; y: number; z: number } {
