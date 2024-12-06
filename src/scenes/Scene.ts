@@ -1,10 +1,13 @@
-import { Mesh, MeshLambertMaterial, PlaneGeometry, Scene } from 'three';
+import { Group, Mesh, MeshLambertMaterial, PlaneGeometry, Scene } from 'three';
 
 class BaseScene extends Scene {
+    world: Group;
 
     constructor() {
         // Call parent Scene() constructor
         super();
+        this.world = new Group();
+        this.add(this.world);
     }
 
     static generate(): BaseScene {
@@ -15,7 +18,7 @@ class BaseScene extends Scene {
         const material = new MeshLambertMaterial({ color: 0x808080 });
         const plane = new Mesh(geometry, material);
         plane.rotation.x = -Math.PI / 2;
-        scene.add(plane);
+        scene.world.add(plane);
 
         console.log('Game/scene generated!');
 
