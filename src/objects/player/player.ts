@@ -1,6 +1,6 @@
 import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
-import { connectivity, globalState } from '../../app';
+import { connectivity, gameStateMachine, globalState } from '../../app';
 
 import MODEL from './player.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -115,11 +115,18 @@ class Player extends Group {
         this.previousScore = this.score;
     }
 
+    checkWon(): void {
+        if(this.score >= 500)
+            gameStateMachine.changeState("SETTLING")
+    }
+
     update(timeStamp: number): void {
         this.sendPlayerData(timeStamp);
 
         this.updateScore(timeStamp);
         this.updatePublicScore(timeStamp);
+
+        this.checkWon();
     }
 
     getPosition(): { x: number; y: number; z: number } {

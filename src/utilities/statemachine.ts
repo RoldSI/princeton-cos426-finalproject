@@ -17,6 +17,9 @@ class StateMachine {
     }
 
     changeState(newState: keyof StateMap): void {
+        if (this.currentState === this.states[newState]) {
+            this.update();
+        }
         if (this.currentState) {
             this.currentState.exit();
         }
@@ -30,6 +33,13 @@ class StateMachine {
         if (this.currentState && this.currentState.update) {
             this.currentState.update();
         }
+    }
+
+    verifyState(state: keyof StateMap): boolean {
+        if (this.currentState === this.states[state]) {
+            return true;
+        }
+        return false;
     }
 }
 

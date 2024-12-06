@@ -14,6 +14,8 @@ export class GamePlay {
     private previousTime: DOMHighResTimeStamp;
     private keys: { [key: string]: boolean } = { w: false, a: false, s: false, d: false };
 
+    private isRendering: boolean;
+
     private minimapCamera: OrthographicCamera;
     private minimapRenderer: WebGLRenderer;
     private minimapScene: Scene;
@@ -129,6 +131,7 @@ export class GamePlay {
         this.playerDot = this.getPlayerDot();
         this.minimapRenderer = new WebGLRenderer({ antialias: true });
         this.scoreElement = document.createElement('div');
+        this.isRendering = false;
 
         this.setupFirstPersonRenderer();
         this.constructFirstPersonScene();
@@ -147,6 +150,7 @@ export class GamePlay {
 
         this.windowResizeHandler();
         window.addEventListener('resize', this.windowResizeHandler, false);
+        this.isRendering = true;
         window.requestAnimationFrame(this.onAnimationFrameHandler);
 
         document.body.appendChild(this.canvas);
@@ -163,10 +167,16 @@ export class GamePlay {
         document.body.removeChild(this.minimapRenderer.domElement);
         document.body.removeChild(this.scoreElement);
 
+        this.isRendering = false;
+
+        window.removeEventListener('resize', this.windowResizeHandler);
+
         console.log('Game stopped!');
     }
 
     onAnimationFrameHandler = (timeStamp: number) => {
+        if(!this.isRendering) return;
+
         this.handleKeyboardControls(timeStamp);
     
         this.renderer.render(this.scene, this.player.camera);
