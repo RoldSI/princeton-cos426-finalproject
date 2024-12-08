@@ -1,11 +1,12 @@
-import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster } from 'three';
+import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, AnimationMixer , LoopRepeat} from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, globalState } from '../../app';
 
-import MODEL from './player_model/scene.gltf?url';
+import MODEL from './player_model/model.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class Player extends Group {
+
     camera: PerspectiveCamera;
     head: Object3D;
     audioListener: AudioListener;
@@ -14,14 +15,37 @@ class Player extends Group {
     publicScore: number;
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
+    animationMixer: undefined | AnimationMixer; // really annoying situation with undefined but idk how to fix
+  
 
     constructor(_xPosition: number = 0, _zPosition: number = 0) {
         super();
 
         const loader = new GLTFLoader();
+
         loader.load(MODEL, (gltf) => {
-            this.add(gltf.scene);
+
+            const model = gltf.scene;
+            model.scale.set(0.1,0.1,0.1); // adjusting size/rotation as needed (size might) 
+            model.rotation.y = Math.PI;       
+              
+            this.add(model);
+
+            this.animationMixer = new AnimationMixer(model);
+            /*
+            gltf.animations.forEach((clip: THREE.AnimationClip) => {
+                if (clip.name === 'Idle') {
+                    // Play the Idle animation and loop it indefinitely
+                    const action = this.animationMixer!.clipAction(clip);
+                    action.setLoop(LoopRepeat, Infinity); // Loop indefinitely
+                    action.play();
+                }
+            });
+            */
+
         });
+
+       
 
         this.head = new Object3D();
         this.head.rotation.order = 'YXZ';
