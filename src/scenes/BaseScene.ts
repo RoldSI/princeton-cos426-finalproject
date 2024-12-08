@@ -49,7 +49,7 @@ class BaseScene extends Scene {
     }
 
     getHalfSize(): number {
-        return 80;
+        return 15;
     }
 
     getHeight(_x: number, _z: number): number {
