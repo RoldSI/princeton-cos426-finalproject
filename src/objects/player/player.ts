@@ -2,7 +2,6 @@ import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster }
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, gameStateMachine, globalState } from '../../app';
 
-import MODEL from './player.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class Player extends Group {
@@ -16,12 +15,15 @@ class Player extends Group {
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
 
-    constructor(pos: {x: number, z: number}) {
+    constructor(pos: {x: number, z: number}, character: string = 'flower-blue') {
         super();
 
         const loader = new GLTFLoader();
-        loader.load(MODEL, (gltf) => {
+        const modelPath = new URL(`../${character}/${character}.glb`, import.meta.url).href;
+        loader.load(modelPath, (gltf) => {
             this.add(gltf.scene);
+        }, undefined, (error) => {
+            console.error(`Failed to load model from ${modelPath}:`, error);
         });
 
         this.head = new Object3D();
@@ -129,7 +131,7 @@ class Player extends Group {
     }
 
     checkWon(): void {
-        if(this.score >= 500)
+        if(this.score >= 50000)
             gameStateMachine.changeState("SETTLING")
     }
 
@@ -138,7 +140,7 @@ class Player extends Group {
             const half = globalState.scene!.getHalfSize();
             const x = Math.random() * (half*2) - half;
             const z = Math.random() * (half*2) - half;
-            this.setPosition(x, z);
+            // this.setPosition(x, z);
         }
     }
 
