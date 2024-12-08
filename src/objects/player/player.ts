@@ -131,7 +131,7 @@ class Player extends Group {
     }
 
     checkWon(): void {
-        if(this.score >= 50000)
+        if(this.score >= 1000)
             gameStateMachine.changeState("SETTLING")
     }
 
@@ -140,7 +140,7 @@ class Player extends Group {
             const half = globalState.scene!.getHalfSize();
             const x = Math.random() * (half*2) - half;
             const z = Math.random() * (half*2) - half;
-            // this.setPosition(x, z);
+            this.setPosition(x, z);
         }
     }
 
