@@ -4,7 +4,7 @@ import { gameStateMachine, sceneMap } from "../app";
 
 export class SceneSelectionScreen {
     private container: HTMLDivElement;
-    public selectedScene: string | undefined = undefined; // Store the selected scene
+    public selectedScene: string = 'Base Scene'; // Store the selected scene
 
     constructor() {
         // Create a container for the screen
