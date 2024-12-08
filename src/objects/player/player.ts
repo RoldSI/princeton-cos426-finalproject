@@ -1,4 +1,4 @@
-import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, AnimationMixer , LoopRepeat} from 'three';
+import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, AnimationMixer , AnimationClip} from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, globalState } from '../../app';
 
@@ -16,32 +16,27 @@ class Player extends Group {
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
     animationMixer: undefined | AnimationMixer; // really annoying situation with undefined but idk how to fix
+    animations : AnimationClip[];
   
 
     constructor(_xPosition: number = 0, _zPosition: number = 0) {
         super();
 
         const loader = new GLTFLoader();
+        this.animations = []; // actual animations will be loaded below
 
         loader.load(MODEL, (gltf) => {
 
             const model = gltf.scene;
-            model.scale.set(0.1,0.1,0.1); // adjusting size/rotation as needed (size might) 
-            model.rotation.y = Math.PI;       
+            model.scale.set(0.12,0.12,0.12); // adjusting size/rotation as needed (size might) 
+            model.rotation.y = Math.PI*9/8;       
               
             this.add(model);
 
             this.animationMixer = new AnimationMixer(model);
-            /*
-            gltf.animations.forEach((clip: THREE.AnimationClip) => {
-                if (clip.name === 'Idle') {
-                    // Play the Idle animation and loop it indefinitely
-                    const action = this.animationMixer!.clipAction(clip);
-                    action.setLoop(LoopRepeat, Infinity); // Loop indefinitely
-                    action.play();
-                }
-            });
-            */
+
+            this.animations = gltf.animations;
+    
 
         });
 
@@ -49,7 +44,8 @@ class Player extends Group {
 
         this.head = new Object3D();
         this.head.rotation.order = 'YXZ';
-        this.head.position.set(0, 1.8, 0);
+        this.head.position.set(0, 1.8, -0.4); // 0.4 prevents you from looking inside the char when looking down
+                                              // Downside being the camera is not really where the head is (feels better this way imo)
         this.add(this.head);
 
         this.camera = new PerspectiveCamera();
