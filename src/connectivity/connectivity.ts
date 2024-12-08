@@ -3,13 +3,20 @@ import { gameStateMachine, globalState, sceneMap } from '../app';
 import { GamePlay } from '../gameplay';
 import Player from '../objects/player/player';
 
+function getRandomFourDigitInt(): number {
+    return Math.floor(1000 + Math.random() * 9000);
+}
+
 export class Connectivity {
     public peer: Peer;
     private connection?: DataConnection;
     private playerId?: string;
+    private uniqueness: string = 'o49t8xmus4og89umseo49gmswxyo49x8';
 
     constructor() {
-        this.peer = new Peer({
+        const id = getRandomFourDigitInt().toString();
+        const formattedId = `${id}-${this.uniqueness}`;
+        this.peer = new Peer(formattedId, {
             host: '0.peerjs.com', // Use 'peerjs.com' for PeerJS cloud server
             port: 443,        // Change to 443 for cloud server
             path: '/',
@@ -36,11 +43,12 @@ export class Connectivity {
 
     // Method to access the player ID
     getPlayerId(): string | undefined {
-        return this.playerId;
+        return this.playerId!.substring(0, 4);
     }
 
     connectToPlayer(remotePlayerId: string): void {
-        this.connection = this.peer.connect(remotePlayerId);
+        const formattedId = `${remotePlayerId}-${this.uniqueness}`;
+        this.connection = this.peer.connect(formattedId);
         console.log('Connection initiated as Player A');
         this.setupConnectionHandlers();
     }
