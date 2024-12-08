@@ -26,6 +26,10 @@ class BaseScene extends Scene {
     }
 
     getStartPositions(): [ { x: number, z: number }, { x: number, z: number } ] {
+        return [
+            { x: 0, z: 0 },
+            { x: 0, z: 0 }
+        ];
         function getRand(x: number): number {
             return Math.random() * (x - x / 2) + x / 2;
         }
@@ -41,7 +45,7 @@ class BaseScene extends Scene {
     }
 
     static fromJSON(_json: any): BaseScene {
-        return BaseScene.generate();
+        return this.generate();
     }
 
     update(_timeStamp: number): void {

@@ -1,7 +1,6 @@
 import Peer, { DataConnection } from 'peerjs';
-import { gameStateMachine, globalState } from '../app';
+import { gameStateMachine, globalState, sceneMap } from '../app';
 import { GamePlay } from '../gameplay';
-import BaseScene from '../scenes/Scene';
 import Player from '../objects/player/player';
 
 export class Connectivity {
@@ -55,7 +54,7 @@ export class Connectivity {
             switch (data.type) {
                 case 'init':
                     const {playerA, playerB, scene} = data.content;
-                    globalState.scene = BaseScene.fromJSON(scene);
+                    globalState.scene = sceneMap.get(scene.type)!.fromJSON(scene.content);
                     globalState.gamePlay = new GamePlay(globalState.scene, Player.fromJSON(playerB), Player.fromJSON(playerA));
                     break;
                 case 'start':

@@ -1,6 +1,6 @@
 // SPLASH SCREEN/GAME MENU
 
-import { connectivity, globalState } from "./app";
+import { connectivity, globalState } from "../app";
 
 // import { Connectivity } from "./connectivity/connectivity";
 
@@ -48,7 +48,7 @@ export class SplashScreen {
                 this.container.removeChild(buttonA);
                 this.container.removeChild(buttonB);
                 const notice = document.createElement('div');
-                notice.textContent = "If the game doesn't start in a few seconds, refresh - you entered an invalid game id.";
+                notice.textContent = "Connecting...";
                 notice.style.color = 'white';
                 this.container.appendChild(notice);
             } else {

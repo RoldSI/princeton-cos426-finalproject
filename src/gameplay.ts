@@ -1,5 +1,5 @@
 import { WebGLRenderer, Vector3, OrthographicCamera, Scene, Mesh, SphereGeometry, MeshBasicMaterial } from 'three';
-import BaseScene from './scenes/Scene';
+import BaseScene from './scenes/BaseScene';
 import Player from './objects/player/player';
 
 export class GamePlay {
