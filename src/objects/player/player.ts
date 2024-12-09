@@ -1,4 +1,4 @@
-import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster } from 'three';
+import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, Box3 } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, gameStateMachine, globalState } from '../../app';
 
@@ -170,7 +170,25 @@ class Player extends Group {
         const halfSize = globalState.scene!.getHalfSize();
         const x_restircted = Math.max(-halfSize, Math.min(halfSize, x));
         const z_restircted = Math.max(-halfSize, Math.min(halfSize, z));
-        this.position.set(x_restircted, globalState.scene!.getHeight(x_restircted, z_restircted), z_restircted);
+        // verify collisions before proceeding
+        if (!this.isColliding(new Vector3(x_restircted, globalState.scene!.getHeight(x_restircted, z_restircted), z_restircted))) {
+            this.position.set(x_restircted, globalState.scene!.getHeight(x_restircted, z_restircted), z_restircted);
+        }
+    }
+
+    private isColliding(newPosition: Vector3): boolean {
+        // Create a bounding box for the player at the new position
+        const playerBox = new Box3().setFromObject(this);
+        playerBox.translate(newPosition.sub(this.position)); // Adjust bounding box to new position
+    
+        // Check against all objects in the scene
+        for (const object of globalState.scene!.collisionObjects) {
+            const objectBox = new Box3().setFromObject(object);
+            if (playerBox.intersectsBox(objectBox)) {
+                return true; // Collision detected
+            }
+        }
+        return false; // No collision
     }
 
     getOrientation(): { x: number; y: number } {

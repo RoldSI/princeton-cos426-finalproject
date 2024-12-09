@@ -24,8 +24,9 @@ export class FlowerHorror extends BaseScene {
             const x = Math.random() * 2 * scene.getHalfSize() - scene.getHalfSize();
             const z = Math.random() * 2 * scene.getHalfSize() - scene.getHalfSize();
             const flower = new FlowerYellow();
-            flower.position.set(x, 0, z);
+            flower.position.set(x, scene.getHeight(x, z), z);
             scene.world.add(flower);
+            scene.addCollisionObject(flower);
             scene.flowers.push({ x, z });
         }
 
@@ -48,6 +49,7 @@ export class FlowerHorror extends BaseScene {
             const flower = new FlowerYellow();
             flower.position.set(x, 0, z);
             scene.world.add(flower);
+            scene.addCollisionObject(flower);
         });
 
         return scene;

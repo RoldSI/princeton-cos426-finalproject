@@ -1,13 +1,26 @@
-import { Group, Mesh, MeshLambertMaterial, PlaneGeometry, Scene } from 'three';
+import { Group, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene } from 'three';
 
 class BaseScene extends Scene {
     world: Group;
+    collisionObjects: Object3D[];
 
     constructor() {
-        // Call parent Scene() constructor
         super();
         this.world = new Group();
+        this.collisionObjects = [];
         this.add(this.world);
+    }
+
+    addCollisionObject(object: Object3D): void {
+        this.collisionObjects.push(object);
+        this.world.add(object);
+    }
+
+    removeCollisionObject(object: Object3D): void {
+        const index = this.collisionObjects.indexOf(object);
+        if (index > -1) {
+            this.collisionObjects.splice(index, 1);
+        }
     }
 
     static generate(): BaseScene {
