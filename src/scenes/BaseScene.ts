@@ -1,20 +1,33 @@
-import { Group, Mesh, MeshLambertMaterial, PlaneGeometry, Scene } from 'three';
+import { Group, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene } from 'three';
 
 class BaseScene extends Scene {
     world: Group;
+    collisionObjects: Object3D[];
 
     constructor() {
-        // Call parent Scene() constructor
         super();
         this.world = new Group();
+        this.collisionObjects = [];
         this.add(this.world);
+    }
+
+    addCollisionObject(object: Object3D): void {
+        this.collisionObjects.push(object);
+        this.world.add(object);
+    }
+
+    removeCollisionObject(object: Object3D): void {
+        const index = this.collisionObjects.indexOf(object);
+        if (index > -1) {
+            this.collisionObjects.splice(index, 1);
+        }
     }
 
     static generate(): BaseScene {
         console.log('Generating game/scene!');
 
         const scene: BaseScene = new BaseScene();
-        const geometry = new PlaneGeometry(160, 160);
+        const geometry = new PlaneGeometry(scene.getHalfSize()*2, scene.getHalfSize()*2);
         const material = new MeshLambertMaterial({ color: 0x808080 });
         const plane = new Mesh(geometry, material);
         plane.rotation.x = -Math.PI / 2;
@@ -41,7 +54,7 @@ class BaseScene extends Scene {
     }
 
     static fromJSON(_json: any): BaseScene {
-        return BaseScene.generate();
+        return this.generate();
     }
 
     update(_timeStamp: number): void {
@@ -49,7 +62,7 @@ class BaseScene extends Scene {
     }
 
     getHalfSize(): number {
-        return 80;
+        return 15;
     }
 
     getHeight(_x: number, _z: number): number {

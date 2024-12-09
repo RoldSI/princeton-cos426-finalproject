@@ -1,5 +1,5 @@
 import { WebGLRenderer, Vector3, OrthographicCamera, Scene, Mesh, SphereGeometry, MeshBasicMaterial } from 'three';
-import BaseScene from './scenes/Scene';
+import BaseScene from './scenes/BaseScene';
 import Player from './objects/player/player';
 
 export class GamePlay {
@@ -118,7 +118,7 @@ export class GamePlay {
         this.scoreElement.style.textAlign = 'right'; // Align text to the right
     }
 
-    constructor(scene: BaseScene, player: Player, player_other: Player, movementSpeed: number = 3) {
+    constructor(scene: BaseScene, player: Player, player_other: Player, movementSpeed: number = 4) {
         this.movementSpeed = movementSpeed;
         this.scene = scene;
         this.player = player;

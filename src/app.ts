@@ -7,16 +7,25 @@
  *
  */
 import { Connectivity } from './connectivity/connectivity';
-import { SplashScreen } from './splashscreen';
+import { SplashScreen } from './screens/splashscreen';
 import { GamePlay } from './gameplay';
 import StateMachine, { StateMap } from './utilities/statemachine';
 import Player from './objects/player/player';
-import BaseScene from './scenes/Scene';
-import { LosingScreen, WinningScreen } from './endscreen';
+import BaseScene from './scenes/BaseScene';
+import { LosingScreen, WinningScreen } from './screens/endscreen';
+import { WaitScreen } from './screens/waitscreen';
+import { SceneSelectionScreen } from './screens/sceneselectionscreen';
+import { FlowerHorror } from './scenes/FlowerHorror';
 
+export const sceneMap: Map<string, typeof BaseScene> = new Map<string, typeof BaseScene>([
+    ['Base Scene', BaseScene],
+    ['Flower Horror', FlowerHorror]
+]);
 // global state
 export const connectivity = new Connectivity();
 export const splashScreen = new SplashScreen();
+export const sceneSelectionScreen = new SceneSelectionScreen();
+export const waitScreen = new WaitScreen();
 export const winningScreen = new WinningScreen();
 export const losingScreen = new LosingScreen();
 export const globalState: {
@@ -56,42 +65,48 @@ const States: StateMap = {
     A_INIT: {
         enter() {
             console.log("Entering A_INIT");
-            // generate scene
-            const scene = BaseScene.generate();
-            globalState.scene = scene;
-            const startPositions = scene.getStartPositions();
-            // generate players
-            const playerA = new Player(startPositions[0]);
-            const playerB = new Player(startPositions[1]);
-            // send
-            connectivity.sendData({
-                type: 'init',
-                content: {
-                    playerA: playerA.toJSON(),
-                    playerB: playerB.toJSON(),
-                    scene: scene.toJSON()
-                }
-            });
-            connectivity.sendData({
-                type: 'start'
-            });
-            // gameplay
-            globalState.gamePlay = new GamePlay(scene, playerA, playerB);
+            sceneSelectionScreen.show();
         },
         update() {
             console.log("Updating state if necessary");
-            if (globalState.startOther) {
-                gameStateMachine.changeState("GAMEPLAY");
+            if (sceneSelectionScreen.selectedScene != null) {
+                if (globalState.gamePlay == undefined) {
+                    const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate();
+                    globalState.scene = scene;
+                    const startPositions = scene.getStartPositions();
+                    const playerA = new Player(startPositions[0]);
+                    const playerB = new Player(startPositions[1]);
+                    connectivity.sendData({
+                        type: 'init',
+                        content: {
+                            playerA: playerA.toJSON(),
+                            playerB: playerB.toJSON(),
+                            scene: {
+                                type: sceneSelectionScreen.selectedScene,
+                                content: scene.toJSON()
+                            }
+                        }
+                    });
+                    connectivity.sendData({
+                        type: 'start'
+                    });
+                    globalState.gamePlay = new GamePlay(scene, playerA, playerB);
+                }
+                if (globalState.startOther) {
+                    gameStateMachine.changeState("GAMEPLAY");
+                }
             }
         },
         exit() {
             console.log("Exiting A_INIT");
+            sceneSelectionScreen.hide();
             globalState.startOther = false;
         }
     },
     B_INIT: {
         enter() {
             console.log("Entering B_INIT");
+            waitScreen.show();
         },
         update() {
             console.log("Updating state if necessary");
@@ -106,6 +121,7 @@ const States: StateMap = {
         },
         exit() {
             console.log("Exiting B_INIT");
+            waitScreen.hide();
             globalState.startOther = false;
         }
     },
