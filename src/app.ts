@@ -74,8 +74,8 @@ const States: StateMap = {
                     const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate();
                     globalState.scene = scene;
                     const startPositions = scene.getStartPositions();
-                    const playerA = new Player(startPositions[0]);
-                    const playerB = new Player(startPositions[1]);
+                    const playerA = new Player(startPositions[0], true);
+                    const playerB = new Player(startPositions[1], false);
                     connectivity.sendData({
                         type: 'init',
                         content: {

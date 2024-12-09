@@ -15,7 +15,7 @@ class Player extends Group {
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
 
-    constructor(pos: {x: number, z: number}, character: string = 'flower-blue') {
+    constructor(pos: {x: number, z: number}, isMe: boolean, character: string = 'flower-blue') {
         super();
 
         const loader = new GLTFLoader();
@@ -39,7 +39,10 @@ class Player extends Group {
         this.head.add(flashlight);
 
         this.audioListener = new AudioListener();
-        this.camera.add(this.audioListener);
+        if (isMe) {
+            this.camera.add(this.audioListener);
+            globalState.scene!.registerAudio(this.audioListener);
+        }
 
         this.score = 0;
         this.previousScore = this.score;
@@ -59,8 +62,8 @@ class Player extends Group {
         };
     }
 
-    static fromJSON(json: any): Player {
-        const player = new Player({x: json.position.x, z: json.position.z});
+    static fromJSON(json: any, isMe: boolean): Player {
+        const player = new Player({x: json.position.x, z: json.position.z}, isMe);
         player.updateFromJSON(json);
         return player;
     }
