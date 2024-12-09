@@ -51,7 +51,7 @@ export class Connectivity {
 
         // Listen for data
         this.connection.on('data', (data: any) => {
-            console.log('Received:', data);
+            //console.log('Received:', data);
             switch (data.type) {
                 case 'init':
                     const {playerA, playerB, scene} = data.content;
@@ -71,12 +71,12 @@ export class Connectivity {
         });
 
         this.connection.on('open', () => {
-            console.log('Data channel open!');
+            //console.log('Data channel open!');
             gameStateMachine.update();
         });
 
         this.connection.on('close', () => {
-            console.log('Connection closed.');
+            //console.log('Connection closed.');
         });
     }
 

@@ -1,8 +1,8 @@
-import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, AnimationMixer , AnimationClip} from 'three';
+import {Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, AnimationMixer , AnimationAction} from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, globalState } from '../../app';
 
-import MODEL from './player_model/model.gltf?url';
+import MODEL from './player_model/model4.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class Player extends Group {
@@ -15,15 +15,23 @@ class Player extends Group {
     publicScore: number;
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
-    animationMixer: undefined | AnimationMixer; // really annoying situation with undefined but idk how to fix
-    animations : AnimationClip[];
-  
+    animationMixer: AnimationMixer | undefined; 
+    actions : { [key: string]: THREE.AnimationAction };
+    activeAction : AnimationAction | undefined; //used for the actual animation
+    currentAnimation : string; 
+
+    
 
     constructor(_xPosition: number = 0, _zPosition: number = 0) {
         super();
+        
+       
 
+        this.currentAnimation = "Idle";
         const loader = new GLTFLoader();
-        this.animations = []; // actual animations will be loaded below
+        this.actions = {};
+        this.activeAction = undefined;
+      
 
         loader.load(MODEL, (gltf) => {
 
@@ -34,18 +42,32 @@ class Player extends Group {
             this.add(model);
 
             this.animationMixer = new AnimationMixer(model);
-
+            this.animationMixer.timeScale = 5;
             this.animations = gltf.animations;
-    
 
+            this.actions['Idle'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'Idle')!);
+            this.actions['WalkForward'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkForward')!);
+            this.actions['WalkLeft'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkLeft')!);
+            this.actions['WalkRight'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkRight')!);
+            this.actions['WalkBack'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkBack')!);
+
+            this.actions['WalkLeft'].timeScale = 8; // feels better imo needs tuning
+            this.actions['WalkRight'].timeScale = 8;
+
+            this.activeAction = this.actions['Idle'];
+            this.activeAction.play();
+        
+    
         });
 
        
 
         this.head = new Object3D();
         this.head.rotation.order = 'YXZ';
-        this.head.position.set(0, 1.8, -0.4); // 0.4 prevents you from looking inside the char when looking down
-                                              // Downside being the camera is not really where the head is (feels better this way imo)
+        
+
+        this.head.position.set(0, 1.8, -0.5); // 054 prevents you from looking inside the char when looking down
+                                              // Downside being the camera is not really where the head is however imo it feels natural
         this.add(this.head);
 
         this.camera = new PerspectiveCamera();
@@ -68,7 +90,8 @@ class Player extends Group {
             position: this.getPosition(),
             orientation: this.getOrientation(),
             score: this.score,
-            publicScore: this.publicScore
+            publicScore: this.publicScore,
+            currentAnimation : this.currentAnimation
         };
     }
 
@@ -83,6 +106,8 @@ class Player extends Group {
         this.setOrientation(json.orientation.x, json.orientation.y);
         this.score = json.score;
         this.publicScore = json.publicScore;
+        this.currentAnimation = json.currentAnimation;
+        
     }
 
     sendPlayerData(timeStamp: number): void {
@@ -135,9 +160,10 @@ class Player extends Group {
         this.previousScore = this.score;
     }
 
-    update(timeStamp: number): void {
-        this.sendPlayerData(timeStamp);
 
+    update(timeStamp: number): void {
+        
+        this.sendPlayerData(timeStamp);
         this.updateScore(timeStamp);
         this.updatePublicScore(timeStamp);
     }
@@ -178,6 +204,19 @@ class Player extends Group {
         this.rotation.y = y;
         this.head.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, x))
     }
+
+    fadeToAction(newActionName: string, duration: number = 0.5): void {
+        const newAction = this.actions[newActionName];
+        
+        // If the new action is different from the current one, fade to it
+        if (newAction && newAction !== this.activeAction) {
+          if (this.activeAction) {
+            this.activeAction.crossFadeTo(newAction, duration, true);
+          }
+          newAction.reset().play(); // Reset and play the new action
+          this.activeAction = newAction;  // Update the activeAction
+        }
+      }
 }
 
 export default Player;

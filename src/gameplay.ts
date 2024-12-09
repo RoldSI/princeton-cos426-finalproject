@@ -69,12 +69,15 @@ export class GamePlay {
         const forward = new Vector3(0, 0, -1).applyQuaternion(this.player.quaternion); // Forward direction
         const right = new Vector3(1, 0, 0).applyQuaternion(this.player.quaternion); // Right direction
         const positionUpdate = new Vector3();
-        if (this.keys.w) positionUpdate.add(forward.multiplyScalar(this.movementSpeed * delta));
+        if (this.keys.w) {positionUpdate.add(forward.multiplyScalar(this.movementSpeed * delta))};
         if (this.keys.s) positionUpdate.add(forward.multiplyScalar(-this.movementSpeed * delta));
         if (this.keys.a) positionUpdate.add(right.multiplyScalar(-this.movementSpeed * delta));
         if (this.keys.d) positionUpdate.add(right.multiplyScalar(this.movementSpeed * delta));
         this.player.modifyPosition(positionUpdate);
         this.playerDot.position.set(this.player.position.x, 0, this.player.position.z);
+        
+       
+ 
     }
 
     constructMinimapScene(): void {
@@ -167,8 +170,34 @@ export class GamePlay {
     }
 
     onAnimationFrameHandler = (timeStamp: number) => {
+        let delta = (timeStamp - this.previousTime)/1000;
         this.handleKeyboardControls(timeStamp);
-    
+        
+        if(this.keys.w){
+            this.player.currentAnimation = "WalkForward";
+        }
+        else if(this.keys.s){
+            this.player.currentAnimation = "WalkBack";
+        }
+        else if(this.keys.a){
+            this.player.currentAnimation = "WalkLeft";
+        }
+        else if(this.keys.d){
+            this.player.currentAnimation = "WalkRight";
+        }
+        else{
+            this.player.currentAnimation = "Idle";
+        }
+
+        this.player.fadeToAction(this.player.currentAnimation);
+        this.player_other.fadeToAction(this.player_other.currentAnimation);
+        if(this.player.animationMixer != undefined){
+            this.player.animationMixer.update(delta);
+        }
+        if(this.player_other.animationMixer != undefined){
+            this.player_other.animationMixer.update(delta);
+        }
+
         this.renderer.render(this.scene, this.player.camera);
         this.minimapRenderer.render(this.minimapScene, this.minimapCamera);
 
@@ -179,6 +208,7 @@ export class GamePlay {
         
         window.requestAnimationFrame(this.onAnimationFrameHandler);
     }
+
 
     windowResizeHandler = () => {
         const { innerHeight, innerWidth } = window;
