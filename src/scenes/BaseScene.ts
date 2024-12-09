@@ -1,4 +1,4 @@
-import { Group, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene } from 'three';
+import { Group, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene, AudioListener, Audio, AudioLoader } from 'three';
 
 class BaseScene extends Scene {
     world: Group;
@@ -36,6 +36,21 @@ class BaseScene extends Scene {
         console.log('Game/scene generated!');
 
         return scene;
+    }
+
+    registerAudio(audioListener: AudioListener): void {
+        const sound = new Audio(audioListener);
+        const audioLoader = new AudioLoader();
+
+        const audioPath = new URL(`./globalAudio/mystic.mp3`, import.meta.url).href;
+        audioLoader.load(audioPath, (buffer) => {
+            sound.setBuffer(buffer);
+            sound.setLoop(true); // Loop the audio
+            sound.setVolume(0.8); // Set volume (0.0 to 1.0)
+            sound.play(); // Start playback
+        }, undefined, (error) => {
+            console.error('Failed to load audio:', error);
+        });
     }
 
     getStartPositions(): [ { x: number, z: number }, { x: number, z: number } ] {

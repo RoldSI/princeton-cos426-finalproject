@@ -63,7 +63,7 @@ export class Connectivity {
                 case 'init':
                     const {playerA, playerB, scene} = data.content;
                     globalState.scene = sceneMap.get(scene.type)!.fromJSON(scene.content);
-                    globalState.gamePlay = new GamePlay(globalState.scene, Player.fromJSON(playerB), Player.fromJSON(playerA));
+                    globalState.gamePlay = new GamePlay(globalState.scene, Player.fromJSON(playerB, true), Player.fromJSON(playerA, false));
                     break;
                 case 'start':
                     globalState.startOther = true;
