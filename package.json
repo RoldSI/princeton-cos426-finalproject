@@ -28,6 +28,7 @@
         "dat.gui": "^0.7.9",
         "express": "^4.21.2",
         "peerjs": "^1.5.4",
+        "perlin-noise": "^0.0.1",
         "three": "^0.158.0"
     },
     "devDependencies": {
