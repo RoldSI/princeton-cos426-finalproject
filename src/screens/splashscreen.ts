@@ -44,6 +44,7 @@ export class SplashScreen {
             globalState.playerType = 'A';
             const remotePlayerId = prompt('Enter game id:');
             if (remotePlayerId) {
+                console.log(remotePlayerId);
                 connectivity.connectToPlayer(remotePlayerId);
                 this.container.removeChild(buttonA);
                 this.container.removeChild(buttonB);

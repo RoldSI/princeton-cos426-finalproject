@@ -25,12 +25,20 @@
         "format": "prettier --write ."
     },
     "dependencies": {
+        "alea": "^1.0.1",
         "dat.gui": "^0.7.9",
+        "gl-noise": "^1.6.1",
         "peerjs": "^1.5.4",
+        "perlin-noise": "^0.0.1",
+        "seedrandom": "^3.0.5",
+        "simplex-noise": "^4.0.3",
         "three": "^0.158.0"
     },
     "devDependencies": {
         "@types/dat.gui": "^0.7.12",
+        "@types/node": "^22.10.1",
+        "@types/noisejs": "^2.1.0",
+        "@types/seedrandom": "^3.0.8",
         "@types/three": "^0.158.3",
         "prettier": "^3.1.0",
         "rollup": "^4.7.0",

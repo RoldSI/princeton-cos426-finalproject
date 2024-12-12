@@ -1,14 +1,23 @@
 import { Group, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene } from 'three';
+import PerlinNoise from '../utilities/perlin_noise';
+
+const hillSpacing = 50;
+const hillHeight = 3;
 
 class BaseScene extends Scene {
     world: Group;
     collisionObjects: Object3D[];
-
-    constructor() {
+    public perlin : PerlinNoise;
+    seed : number;
+    
+    constructor(seed : number) {
         super();
+        console.log("Scene :" , seed);
         this.world = new Group();
         this.collisionObjects = [];
         this.add(this.world);
+        this.seed = seed;
+        this.perlin = new PerlinNoise(this.seed, this.getHalfSize()*2, this.getHalfSize()*2);
     }
 
     addCollisionObject(object: Object3D): void {
@@ -23,14 +32,31 @@ class BaseScene extends Scene {
         }
     }
 
-    static generate(): BaseScene {
+    static generate(seed : number): BaseScene {
         console.log('Generating game/scene!');
 
-        const scene: BaseScene = new BaseScene();
-        const geometry = new PlaneGeometry(scene.getHalfSize()*2, scene.getHalfSize()*2);
-        const material = new MeshLambertMaterial({ color: 0x808080 });
+        const scene: BaseScene = new BaseScene(seed);
+        const width = scene.getHalfSize()*2;
+        const height = scene.getHalfSize()*2;
+        const geometry = new PlaneGeometry(width, height, 100, 100); // 100 determines the detail of height maps 
+       
+        for (let i = 0; i < geometry.attributes.position.count; i++) {
+            const x = i % geometry.parameters.widthSegments;
+            const y = Math.floor(i / geometry.parameters.widthSegments);
+    
+            // Map the vertex (x, y) position to a noise value
+            const noiseValue = scene.perlin.noise(x / hillSpacing, y / hillSpacing); // Scale the inputs for better results
+            const heightValue = noiseValue; // Scale the noise output to control height variation
+    
+            // Update the Z position of the vertex (which ends up being the "height") (height of the terrain)
+            geometry.attributes.position.setZ(i, heightValue*hillHeight);
+        }
+
+        const material = new MeshLambertMaterial({ color: 0x00ff00 });
         const plane = new Mesh(geometry, material);
         plane.rotation.x = -Math.PI / 2;
+
+
         scene.world.add(plane);
 
         console.log('Game/scene generated!');
@@ -50,11 +76,11 @@ class BaseScene extends Scene {
     }
 
     toJSON(): any {
-        return {};
+        return {seed : this.seed};
     }
 
     static fromJSON(_json: any): BaseScene {
-        return this.generate();
+        return this.generate(_json.seed);
     }
 
     update(_timeStamp: number): void {
@@ -65,8 +91,12 @@ class BaseScene extends Scene {
         return 15;
     }
 
-    getHeight(_x: number, _z: number): number {
-        return 0;
+    getHeight(_x: number, _z: number): number { // since the plane is rotated the "height is actually 
+        // Now rotating around -pi/2 means player
+
+        const h = this.perlin.noise(_x / hillSpacing, -_z / hillSpacing);
+       
+        return h*hillHeight;
     }
 }
 

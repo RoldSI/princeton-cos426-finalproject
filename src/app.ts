@@ -71,7 +71,8 @@ const States: StateMap = {
             console.log("Updating state if necessary");
             if (sceneSelectionScreen.selectedScene != null) {
                 if (globalState.gamePlay == undefined) {
-                    const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate();
+                    console.log(connectivity.seed);
+                    const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate(connectivity.seed);
                     globalState.scene = scene;
                     const startPositions = scene.getStartPositions();
                     const playerA = new Player(startPositions[0]);
