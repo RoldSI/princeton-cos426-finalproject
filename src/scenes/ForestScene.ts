@@ -21,10 +21,10 @@ export class Forest extends BaseScene {
 
 
     public grass : Mesh[] = [];
-    public small : Object3D[] = []; //these two are purley astetic -> dont have a hitbox
+    public stones : Object3D[] = []; 
 
     public trees : Object3D[] = [];
-    public  big : Object3D[] = []; //these two actually exists -> have a hitbox
+
 
     constructor(seed : number) {
         super(seed);
@@ -81,17 +81,22 @@ export class Forest extends BaseScene {
                 scene.trees.push(pine3);
             }
 
-            const small1 = model.getObjectByName('pSolid1');
-            const small2 = model.getObjectByName('pSolid2');
-            const small3 = model.getObjectByName('pSolid3');
-            const small4 = model.getObjectByName('pSolid4');
+            const stones1 = model.getObjectByName('pSolid1');
+            //const stones2 = model.getObjectByName('pSolid2'); model looks wrong
+            const stones3 = model.getObjectByName('pSolid3');
+            const stones4 = model.getObjectByName('pSolid4');
+            const stones5 = model.getObjectByName('pSphere1');
 
-            if(small1 && small2 && small3 && small4){
-                scene.small.push(small1);
-                scene.small.push(small2);
-                scene.small.push(small3);
-                scene.small.push(small4);
+            if(stones1  && stones3 && stones4 && stones5){
+                scene.stones.push(stones1);
+ 
+                scene.stones.push(stones3);
+                scene.stones.push(stones4);
+                scene.stones.push(stones5);
             }
+
+            
+
 
         
 
@@ -116,17 +121,17 @@ export class Forest extends BaseScene {
                 }
             }
 
-            const distSmall = 0.8;
-            //Place Small Stones everywhere
-            for(let x = - width/2 + distSmall/2; x <= width/2 - distSmall/2; x+= distSmall){
-                for(let z = - height/2 + distSmall/2; z <= height/2 - distSmall/2; z+= distSmall){
-                    let dx = rng()*distSmall - distSmall/2; // ranoom in [-0.2, 0.25]
-                    let dz = rng()*distSmall - distSmall/2; // ranoom in [-0.2, 0.25]
+            const diststones = 0.8;
+            //Place smalll Stones everywhere (these do not have collison)
+            for(let x = - width/2 + diststones/2; x <= width/2 - diststones/2; x+= diststones){
+                for(let z = - height/2 + diststones/2; z <= height/2 - diststones/2; z+= diststones){
+                    let dx = rng()*diststones - diststones/2; // ranoom in [-0.2, 0.25]
+                    let dz = rng()*diststones - diststones/2; // ranoom in [-0.2, 0.25]
 
-                    let i = Math.floor(rng()*scene.small.length);
+                    let i = Math.floor(rng()*scene.stones.length);
                     let r = 2*Math.PI*rng();
 
-                    let g = scene.small[i].clone(); 
+                    let g = scene.stones[i].clone(); 
                     g.scale.set(0.015,0.015,0.015);
                     let posx = x + dx;
                     let posz = z + dz;
@@ -145,12 +150,28 @@ export class Forest extends BaseScene {
                     let dx = (rng()*distTrees - distTrees/2)*0.8; 
                     let dz =(rng()*distTrees - distTrees/2)*0.8; //0.8 to prevent trees from spawning in each other
 
-                    let i = Math.floor(rng()*scene.trees.length);
-                    let r = 2*Math.PI*rng();
+                    let i = 0;
+                    let t;
+                    let r;
 
-                    let t = scene.trees[i].clone(); 
+                    if(rng() < 0.05){ // with very small probability generate a big stone instead of big tree.
+                        i = Math.floor(rng()*scene.stones.length);
+                        t = scene.stones[i].clone();
+                        r = 2*Math.PI*rng();
+                        t.scale.set(0.15,0.15,0.15);
+                    }
+                    else{
+                        i = Math.floor(rng()*scene.trees.length);
+                        t = scene.trees[i].clone(); 
+                        r = 2*Math.PI*rng();
+                        t.scale.set(0.2,0.2,0.2);
+                    }
                     
-                    t.scale.set(0.2,0.2,0.2);
+                    
+
+                    
+                    
+                    
                     let posx = x + dx;
                     let posz = z + dz;
                     t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
