@@ -1,10 +1,12 @@
-import { Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, Box3 } from 'three';
+import {Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, Box3, AnimationMixer , AnimationAction } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, gameStateMachine, globalState } from '../../app';
 
+import MODEL from './player_model/model4.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class Player extends Group {
+
     camera: PerspectiveCamera;
     head: Object3D;
     audioListener: AudioListener;
@@ -14,29 +16,76 @@ class Player extends Group {
     seeing: boolean;
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
+    animationMixer: AnimationMixer | undefined; 
+    actions : { [key: string]: THREE.AnimationAction };
+    activeAction : AnimationAction | undefined; //used for the actual animation
+    currentAnimation : string; 
+
+    
 
     constructor(pos: {x: number, z: number}, isMe: boolean, character: string = 'flower-blue') {
         super();
-
+        
+        this.currentAnimation = "Idle";
         const loader = new GLTFLoader();
-        const modelPath = new URL(`../${character}/${character}.glb`, import.meta.url).href;
-        loader.load(modelPath, (gltf) => {
-            this.add(gltf.scene);
-        }, undefined, (error) => {
-            console.error(`Failed to load model from ${modelPath}:`, error);
+        this.actions = {};
+        this.activeAction = undefined;
+
+        const flashlight = new BasicFlashlight();
+        this.flashlight = flashlight;
+        this.flashlight.position.set(-2.2, 6.5, 2.8);
+        this.flashlight.rotation.set(0, Math.PI, 0);
+
+        loader.load(MODEL, (gltf) => {
+            const model = gltf.scene;
+            const lanternaCylinder = model.children[0] // Idle
+                .children[1] // spine_001
+                .children[0] // spine_002
+                .children[0] // spine_003
+                .children[1] // shoulder_R
+                .children[0] // arm_R_upper
+                .children[0] // arm_R_lower
+                .children[0] // hand_R
+                .children[0] // finger1_R
+                .children[0] // finger1_R_001
+                .children[1];
+            lanternaCylinder.add(this.flashlight);
+            model.scale.set(0.12,0.12,0.12); // adjusting size/rotation as needed (size might) 
+            model.rotation.y = Math.PI*33/32;       
+              
+            this.add(model);
+
+            this.animationMixer = new AnimationMixer(model);
+            this.animationMixer.timeScale = 1.5;
+            this.animations = gltf.animations;
+
+            this.actions['Idle'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'Idle')!);
+            this.actions['WalkForward'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkForward')!);
+            this.actions['WalkLeft'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkLeft')!);
+            this.actions['WalkRight'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkRight')!);
+            this.actions['WalkBack'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkBack')!);
+
+            this.activeAction = this.actions['Idle'];
+            this.activeAction.play();
+//         const modelPath = new URL(`../${character}/${character}.glb`, import.meta.url).href;
+//         loader.load(modelPath, (gltf) => {
+//             this.add(gltf.scene);
+//         }, undefined, (error) => {
+//             console.error(`Failed to load model from ${modelPath}:`, error);
         });
+
+       
 
         this.head = new Object3D();
         this.head.rotation.order = 'YXZ';
-        this.head.position.set(0, 1.8, 0);
+        
+
+        this.head.position.set(0, 1.8, -0.5); // 054 prevents you from looking inside the char when looking down
+                                              // Downside being the camera is not really where the head is however imo it feels natural
         this.add(this.head);
 
         this.camera = new PerspectiveCamera();
         this.head.add(this.camera);
-
-        const flashlight = new BasicFlashlight();
-        this.flashlight = flashlight;
-        this.head.add(flashlight);
 
         this.audioListener = new AudioListener();
         if (isMe) {
@@ -58,6 +107,7 @@ class Player extends Group {
             orientation: this.getOrientation(),
             score: this.score,
             publicScore: this.publicScore,
+            currentAnimation : this.currentAnimation
             seeing: this.seeing
         };
     }
@@ -73,6 +123,7 @@ class Player extends Group {
         this.setOrientation(json.orientation.x, json.orientation.y);
         this.score = json.score;
         this.publicScore = json.publicScore;
+        this.currentAnimation = json.currentAnimation;
         this.seeing = json.seeing;
     }
 
@@ -149,7 +200,6 @@ class Player extends Group {
 
     update(timeStamp: number): void {
         this.sendPlayerData(timeStamp);
-
         this.updateScore(timeStamp);
         this.updatePublicScore(timeStamp);
 
@@ -211,6 +261,26 @@ class Player extends Group {
         this.rotation.y = y;
         this.head.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, x))
     }
+
+    updateAnimation(duration: number = 0.2): void {
+        if (this.animationMixer == undefined || this.activeAction == undefined) {
+          return
+        }
+        const newAction = this.actions[this.currentAnimation];
+        if(this.currentAnimation == "Idle" || this.currentAnimation == "WalkForward" || this.currentAnimation == "WalkBack") {
+            this.animationMixer.timeScale = 1.7;
+        } else {
+            this.animationMixer.timeScale = 3.5;
+        }
+        // If the new action is different from the current one, fade to it
+        if (newAction && newAction !== this.activeAction) {
+          if (this.activeAction) {
+            newAction.reset().play();
+            this.activeAction.crossFadeTo(newAction, duration, true);
+          }
+          this.activeAction = newAction;  // Update the activeAction
+        }
+      }
 }
 
 export default Player;
