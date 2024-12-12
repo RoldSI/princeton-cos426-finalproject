@@ -13,10 +13,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
     - psphere 5,6 are "Stones (Giant)"
 */
 
-const hillSpacing = 50;
-const hillHeight = 3;
 
 export class Forest extends BaseScene {
+
 
     constructor(seed : number) {
         super(seed);
@@ -30,6 +29,7 @@ export class Forest extends BaseScene {
         const height = scene.getHalfSize()*2;
         const geometry = new PlaneGeometry(width, height, 100, 100); // 100 determines the detail of height maps 
        
+        /*
         for (let i = 0; i < geometry.attributes.position.count; i++) {
             const x = i % geometry.parameters.widthSegments;
             const y = Math.floor(i / geometry.parameters.widthSegments);
@@ -41,6 +41,7 @@ export class Forest extends BaseScene {
             // Update the Z position of the vertex (which ends up being the "height") (height of the terrain)
             geometry.attributes.position.setZ(i, heightValue*hillHeight);
         }
+        */
 
         const material = new MeshLambertMaterial({ color: 0x00ff00 });
         const plane = new Mesh(geometry, material);

@@ -17,7 +17,7 @@ class BaseScene extends Scene {
         this.collisionObjects = [];
         this.add(this.world);
         this.seed = seed;
-        this.perlin = new PerlinNoise(this.seed, this.getHalfSize()*2, this.getHalfSize()*2);
+        this.perlin = new PerlinNoise(this.seed);
     }
 
     addCollisionObject(object: Object3D): void {
