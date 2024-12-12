@@ -51,30 +51,65 @@
 \par We discuss the development of the project in chronological order. This section focusses on the technical aspects of the project. We discuss the non-technical aspects in sections \textit{Goals} and \textit{Results}.
 
 \subsection{First Person Controls}
-\par walking: keypress handler for wsad keys, 
-\par viewing: pointer lock
-\par scene hierarchy initial: player in scene, camera attached to player, rotate/move entire player coordinate frame, determine forward/right vectors of current camera view, use those for walking offset, determine camera x (right) and y (up) axis in global terms to do rotations
-\par walking with right/forward done; reposition entire player, rotation around y also on entire player, rotation around x on newly introduced head to which camera attached (camera fixed on rotation, order of rotation easy; not quaternion mess)
+\par The game uses a custom first-person control implementation. Handlers are registered to run whenever a key is pressed or released. We maintain a map that indicates for keys \texttt{wsad} whether they are currently pressed. In the render loop we compute the time step since the last rendered frame and how far the player should have moved forward/back and right/left.
+\par The player is registered as a child object of the root scene. The x and z vectors are transformed from the local player to the global coordinate system. We then move the player in those direction while adhering to scene bounds etc.
+\par To support rotating the view, we lock the pointer. This feature makes the cursor invisible to the user. Only by pressing \texttt{ESC} is the cursor released from the browser window again. This allows us to continuously track the mouse movement. When the mouse is moved up, the view should rotate up relative to the current view orientation, for instance.
+\par Implementation rotations of the player has been a challenge. Initially, we represented the player as one object to which a camera was attached. Just setting the x and y rotations doesn't work. The rotations don't correspond to the intuitive coordinate frame of the current perspective. For instance, when already looking down, the y axis will be angled. Rotation around the y axis will not lead to a nice horizontal rotation.
+\par A first approach was to compute rotation axis and perform Quaternion-based rotations around those. The final solution is more efficient and separates a head from the player body. We manage the absolute world position and rotation around the y axis at the player level and the rotation around the x axis at the head level. In the scene hierarchy the y rotation is always applied first. That corresponds to the expected and intuitive behavior of first-person controls.
 
-\subsection{Game State Machine and global state}
-\par maintain state machine for different phases (game start, connecting players, network setup/sync, scene selection and scene generation, gameplay, determining winner and winning screen
-\par global state of important data such as whether player A or player B, scene, network status, ...
+\subsection{Game State Machine}
+\par To manage the flow of the game, we use a global state machine. It maintains the states \texttt{SPLASHSCREEN}, \texttt{A\_INIT}, \texttt{B\_INIT}, \texttt{GAMEPLAY}, \texttt{SETTLING}, \texttt{WIN}, and \texttt{LOSE}. Each state is defined with \texttt{enter()}, \texttt{update()}, and \texttt{exit()} functions. The first and last are self-explanatory. \texttt{update()} is called whenever something may affect the state. The necessary actions such as a state transition or network transfers are then initiated.
+\par When a player chooses its role as player A or player B and enters the correct game ID, a network connection is established. As soon as data can be transmitted, players progress into the respective \texttt{INIT} state.
+\par In \texttt{A\_INIT} the game is initialized. The user doesn't notice, but the browser of player A generates the scene and sets up the game for both users as soon as a scene is selected. It transmits this data to the other player and waits for a confirmation. As soon as this confirmation is received, the state transitions to \texttt{GAMEPLAY}.
+\par In \texttt{B\_INIT} the state machine waits until it receives all game information from player A. If all information is received and confirmed, it signals it readiness. When both players are ready, this player also transitions to \texttt{GAMEPLAY}.
+\par To efficiently transmit information between both browsers, all relevant classes have custom JSON encoders and decoders. For instance, a scene is transmitted by its scene type and relevant generation seeds. The same scene can then be reconstructed on the other side. While the scene must only be synchronized once, player data is sent $>10$ times per second to provide fluent motion of the other player. The data used to characterized a player are: position, orientation, score, current animation, and whether the other player is currently being observed.
+\par In \texttt{GAMEPLAY}, each player moves through the world and computes its own score. The own player data is frequently sent to the other player so that the latest information on the position and orientation on the opponent is always available. This information is naturally not shown to the player but used to appropriately place it in the world.
+\par When one player reaches 1000 points, it signals the other player that the game should be ended and transitions to the \texttt{SETTLING} state. Each player then sends a message with its final state. This allows the winner to be determined. Depending on the outcome, we transition to \texttt{WIN} or \texttt{LOSE} for a result screen. At this point a new game can be started.
+
+\subsection{Global State}
+\par In addition to the game state machine, each player also maintains some globally available data. Most importantly the scene and a \texttt{GamePlay} object. Through the scene, also access to both players is possible. Having this state globally available requires rigorous management of the state. This is worth it because data about the scene and players need to be accessed in various locations to compute collisions, compute scores, update player positions from first-person controls, update the opponents information over the network, ...
 
 \subsection{Networking}
-\par not rely on custom server architecture, direct P2P communication
-requires considering consistency and parallelism challenges when maintaining game state
-\par using WebRTC (web real time communication; also used by some video conferencing services), best supported in Chromium-based, also Safari; issues with Firefox
-\par use public pairing server for discovery of other player; afterward direct browser to browser communication without centralized server
+\par As elaborated in the \textit{Networking} part of the \textit{Goals} section, we use a decentralized direct browser-to-browser networking approach. The underlying protocol is WebRTC and wrapped by \texttt{PeerJS}. The latter framework provides a public pairing server for WebRTC and exposes a simple interface to transmit JavaScript objects. As already mentioned, we encode/decode our objects to json instead of sending them directly. The scene and player objects are very large and cannot be serialized as a result of extending from complex \texttt{three.js} classes.
+\par One party needs the ID of the other party and requests a connection. If the connection is established, the communication channel is available. While we only show a 4 digit code, we append a long string on both sides of the connection to that ID so that we are likely to have a unique id with the pairing server.
+\par WebRTC is well supported by Safari and Chromium based browsers. Firefox (presumably due to data handling policies) does not have great support for WebRTC. The game should, thus, be played in Safari or Chrome.
 
 \subsection{Software Architecture}
+\par We already mentioned the state machine above. The state machine determines whether the user currently sees the splash screen, scene selection screen, wait screen, the actual gameplay, or win/lose screen. Each of those is implemented separately. This allows very flexible extension with new features and states. The scene selection screen was introduced late during the project without issues, for example.
+\par The configuration screens are of little interest. They add and remove html elements from the displayed html document, handle callbacks for buttons and input, and initiate the network connection.
+
+\subsection{GamePlay}
+\par The core game experience is implemented in the \texttt{GamePlay} class which relies on a \texttt{BaseScene} and \texttt{Player}. The player is a \texttt{three.js} object that is used to represent both players. Both players are constructed independent of the other each other, the scene, and gameplay object. They contain a lot of logic some of which is discussed in the subsections \textit{Score Keeping}, \textit{Player Model \& Animations}, and \textit{Audio}.
+\par \texttt{BaseScene} defines our own extension of \texttt{three.js}'s \texttt{Scene}. It adds support for collision detection, variable elevation profiles, procedural generation, JSON encoding, and background audio. It does so by providing functions for each of those features. While we provide \texttt{BaseScene} as a choice to the user, it is mostly meant to be extended by more sophisticated Scene classes. \texttt{BaseScene} is used to define the interface and type between scenes in general and the \texttt{GamePlay} object.
+\par The \texttt{BaseScene} is used as the root for rendering. It contains the attribute \texttt{world} which contains the scene content. This is to have a clear separation between the players and other utilities from the environment.
+\par A \texttt{GamePlay} instance is created for each round. It is passed a \texttt{BaseScene} instance and two \texttt{Player} instances during construction. It sets up the first person and minimap renders. It adds the score display. It adds the players to the scene. It starts and handles first-person controls.
+\par When the state machine decides to start the game, it calls \texttt{start()} on the \texttt{GamePlay} instance which displays the render output and kicks of the render loop. The render loop handles first-person control by tracking the key press state as elaborated above and animations as elaborated in a later subsection. As part of the render loop, it calls an update function on the own player object. This is used to transmit the player status to the opponent, update the score through ray casting, determine whether one has won, and reposition the player when both players see each other.
+\par Developing the state machine required extensive debugging. Most issues were caused by synchronization and consistency issues between both players. We need to make sure that the shared state always agrees. We send confirmations in multiple situations to guarantee this.
+\par In addition, we use a defensive approach. The \texttt{update()} function can be called at any time without negative side effect. Whenever a state may have changed or something relevant might have happened, we can just call that function to handle what may have to be handled.
+%\begin{figure}[H]
+%	\caption{Shadow Spy - Software Architecture}
+%\end{figure}
 
 \subsection{Minimap}
+\par The minimap in the lower right corner of the game is actually a second 3D render. It shows the camera feed of a second camera that looks down onto the game area. Other than the first-person camera this is an Orthographic Camera so that we get an undistorted top-view map. Instead of rendering the real player, we represent it through a low-quality sphere.
+\par One could argue that rendering a second camera is 'overkill'. But because the camera is only rendering a single sphere with 16 width segments to approximate a circle, the computational effort is negligible.
 
 \subsection{Score Keeping}
+\par The player score is updated in a multi-step process:
+\begin{enumerate}
+	\item Compute the distance between both players. If this distance is larger than the flashlight range we don't have to update the score.
+	\item Compute a direction vector that points to the other player and convert it to the local head/camera coordinate system.
+		\par Check if the viewing direction and direction to the other player align. Alignment is determined by the flashlight cone angle.
+	\item If we still couldn't exclude that we observe the other player, we cast a ray through our scene and look for intersections. If no intersection in the scene is found, we observe the opponent and increase our score.
+\end{enumerate}
+\par In addition to the true score value, a public score is set. This is only updated when we stop seeing our opponent. This ensures that the other player can't deduce being observed.
+\par If one's score exceeds 1000 points, one transitions to the \texttt{SETTLING} state in the state machine to terminate the game and determine the winner.
 
 \subsection{Player Model \& Animations}
 
 \subsection{Scenes \& Scene Selection}
+
+\subsection{Collision Detection \& Handling}
 
 \subsection{Audio}
 
@@ -144,7 +179,9 @@ There is also background music.
 % -----------------------------------------------------------------
 
 \section{Resources}
-- related work
+\begin{itemize}
+	\item Three.JS
+\end{itemize}
 
 
 
