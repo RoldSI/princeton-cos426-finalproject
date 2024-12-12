@@ -1,5 +1,5 @@
 import { WebGLRenderer, Vector3, OrthographicCamera, Scene, Mesh, SphereGeometry, MeshBasicMaterial } from 'three';
-import BaseScene from './scenes/Scene';
+import BaseScene from './scenes/BaseScene';
 import Player from './objects/player/player';
 
 export class GamePlay {
@@ -13,6 +13,8 @@ export class GamePlay {
     private canvas: HTMLCanvasElement;
     private previousTime: DOMHighResTimeStamp;
     private keys: { [key: string]: boolean } = { w: false, a: false, s: false, d: false };
+
+    private isRendering: boolean;
 
     private minimapCamera: OrthographicCamera;
     private minimapRenderer: WebGLRenderer;
@@ -119,7 +121,7 @@ export class GamePlay {
         this.scoreElement.style.textAlign = 'right'; // Align text to the right
     }
 
-    constructor(scene: BaseScene, player: Player, player_other: Player, movementSpeed: number = 3) {
+    constructor(scene: BaseScene, player: Player, player_other: Player, movementSpeed: number = 4) {
         this.movementSpeed = movementSpeed;
         this.scene = scene;
         this.player = player;
@@ -132,6 +134,7 @@ export class GamePlay {
         this.playerDot = this.getPlayerDot();
         this.minimapRenderer = new WebGLRenderer({ antialias: true });
         this.scoreElement = document.createElement('div');
+        this.isRendering = false;
 
         this.setupFirstPersonRenderer();
         this.constructFirstPersonScene();
@@ -150,6 +153,7 @@ export class GamePlay {
 
         this.windowResizeHandler();
         window.addEventListener('resize', this.windowResizeHandler, false);
+        this.isRendering = true;
         window.requestAnimationFrame(this.onAnimationFrameHandler);
 
         document.body.appendChild(this.canvas);
@@ -166,11 +170,18 @@ export class GamePlay {
         document.body.removeChild(this.minimapRenderer.domElement);
         document.body.removeChild(this.scoreElement);
 
+        this.isRendering = false;
+
+        window.removeEventListener('resize', this.windowResizeHandler);
+
         console.log('Game stopped!');
     }
 
     onAnimationFrameHandler = (timeStamp: number) => {
         let delta = (timeStamp - this.previousTime)/1000;
+      
+        if(!this.isRendering) return;
+      
         this.handleKeyboardControls(timeStamp);
         
         if(this.keys.w){

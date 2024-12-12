@@ -1,6 +1,6 @@
-import {Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, AnimationMixer , AnimationAction } from 'three';
+import {Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, Box3, AnimationMixer , AnimationAction } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
-import { connectivity, globalState } from '../../app';
+import { connectivity, gameStateMachine, globalState } from '../../app';
 
 import MODEL from './player_model/model4.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -13,6 +13,7 @@ class Player extends Group {
     score: number;
     previousScore: number;
     publicScore: number;
+    seeing: boolean;
     lastUpdate: number = 0;
     flashlight: BasicFlashlight;
     animationMixer: AnimationMixer | undefined; 
@@ -22,7 +23,7 @@ class Player extends Group {
 
     
 
-    constructor(_xPosition: number = 0, _zPosition: number = 0) {
+    constructor(pos: {x: number, z: number}, isMe: boolean, character: string = 'flower-blue') {
         super();
         
         this.currentAnimation = "Idle";
@@ -66,6 +67,11 @@ class Player extends Group {
 
             this.activeAction = this.actions['Idle'];
             this.activeAction.play();
+//         const modelPath = new URL(`../${character}/${character}.glb`, import.meta.url).href;
+//         loader.load(modelPath, (gltf) => {
+//             this.add(gltf.scene);
+//         }, undefined, (error) => {
+//             console.error(`Failed to load model from ${modelPath}:`, error);
         });
 
        
@@ -82,11 +88,17 @@ class Player extends Group {
         this.head.add(this.camera);
 
         this.audioListener = new AudioListener();
-        this.camera.add(this.audioListener);
+        if (isMe) {
+            this.camera.add(this.audioListener);
+            globalState.scene!.registerAudio(this.audioListener);
+        }
 
         this.score = 0;
         this.previousScore = this.score;
         this.publicScore = this.score;
+        this.seeing = false;
+
+        this.setPosition(pos.x, pos.z);
     }
 
     toJSON(): any {
@@ -96,11 +108,12 @@ class Player extends Group {
             score: this.score,
             publicScore: this.publicScore,
             currentAnimation : this.currentAnimation
+            seeing: this.seeing
         };
     }
 
-    static fromJSON(json: any): Player {
-        const player = new Player();
+    static fromJSON(json: any, isMe: boolean): Player {
+        const player = new Player({x: json.position.x, z: json.position.z}, isMe);
         player.updateFromJSON(json);
         return player;
     }
@@ -111,7 +124,7 @@ class Player extends Group {
         this.score = json.score;
         this.publicScore = json.publicScore;
         this.currentAnimation = json.currentAnimation;
-        
+        this.seeing = json.seeing;
     }
 
     sendPlayerData(timeStamp: number): void {
@@ -133,8 +146,10 @@ class Player extends Group {
 
         const distance = sourcePosition.distanceTo(targetPosition);
 
-        if (distance > this.flashlight.getDistance())
+        if (distance > this.flashlight.getDistance()) {
+            this.seeing = false;
             return;
+        }
 
         const direction = new Vector3().subVectors(targetPosition, sourcePosition).normalize();
 
@@ -142,8 +157,10 @@ class Player extends Group {
         localizedDirection.add(sourcePosition);
         this.head.worldToLocal(localizedDirection);
         localizedDirection.normalize();
-        if(!this.flashlight.isAligned(localizedDirection))
+        if(!this.flashlight.isAligned(localizedDirection)) {
+            this.seeing = false;
             return;
+        }
 
         const raycaster = new Raycaster();
         raycaster.set(sourcePosition, direction);
@@ -151,9 +168,12 @@ class Player extends Group {
         raycaster.near = 0.1;
 
         const intersections = raycaster.intersectObjects(globalState.scene!.world.children, true);
-        if(intersections.length > 0)
+        if(intersections.length > 0) {
+            this.seeing = false;
             return;
+        }
 
+        this.seeing = true;
         this.score += 1;
     }
 
@@ -164,11 +184,27 @@ class Player extends Group {
         this.previousScore = this.score;
     }
 
+    checkWon(): void {
+        if(this.score >= 1000)
+            gameStateMachine.changeState("SETTLING")
+    }
+
+    reposition(): void {
+        if(this.seeing && globalState.gamePlay!.player_other.seeing) {
+            const half = globalState.scene!.getHalfSize();
+            const x = Math.random() * (half*2) - half;
+            const z = Math.random() * (half*2) - half;
+            this.setPosition(x, z);
+        }
+    }
 
     update(timeStamp: number): void {
         this.sendPlayerData(timeStamp);
         this.updateScore(timeStamp);
         this.updatePublicScore(timeStamp);
+
+        this.checkWon();
+        this.reposition();
     }
 
     getPosition(): { x: number; y: number; z: number } {
@@ -187,7 +223,25 @@ class Player extends Group {
         const halfSize = globalState.scene!.getHalfSize();
         const x_restircted = Math.max(-halfSize, Math.min(halfSize, x));
         const z_restircted = Math.max(-halfSize, Math.min(halfSize, z));
-        this.position.set(x_restircted, globalState.scene!.getHeight(x_restircted, z_restircted), z_restircted);
+        // verify collisions before proceeding
+        if (!this.isColliding(new Vector3(x_restircted, globalState.scene!.getHeight(x_restircted, z_restircted), z_restircted))) {
+            this.position.set(x_restircted, globalState.scene!.getHeight(x_restircted, z_restircted), z_restircted);
+        }
+    }
+
+    private isColliding(newPosition: Vector3): boolean {
+        // Create a bounding box for the player at the new position
+        const playerBox = new Box3().setFromObject(this);
+        playerBox.translate(newPosition.sub(this.position)); // Adjust bounding box to new position
+    
+        // Check against all objects in the scene
+        for (const object of globalState.scene!.collisionObjects) {
+            const objectBox = new Box3().setFromObject(object);
+            if (playerBox.intersectsBox(objectBox)) {
+                return true; // Collision detected
+            }
+        }
+        return false; // No collision
     }
 
     getOrientation(): { x: number; y: number } {
