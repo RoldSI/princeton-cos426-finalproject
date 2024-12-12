@@ -1,47 +1,157 @@
-\documentclass[11pt]{report}
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper, margin=4cm]{geometry}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+\usepackage{listings}
+
+\title{Shadow Spy\\Introduction to Computer Graphics (COS426)}
+\author{Simon Sure (ss9971@princeton.edu / simon.sure@inf.ethz.ch)\\
+        Flurin Steck (fs7278@princeton.edu / flurin.steck@inf.ethz.ch)}
 
 \begin{document}
-Hello, world!
+\maketitle
+\textit{Shadow Spy} is a two-player hide-and-seek game. Each player navigates a dark shared world from his own first-person perspective carrying flashlight. A player wins by finding their opponent and observe him them sufficiently long first. Players can choose between different scenes.
+\par The game is implemented with \texttt{three.js}, decentralized WebRTC based browser-to-browser communication, and Blender 3D models with animations. We make extensive use of libraries for audio, raycasting and other features, and custom implementations collision detection and handling, first-person controls, and more.
 
-- abstract
+\tableofcontents
 
-- goals
 
-- execution
 
-- outcome
 
-- next steps
+% -----------------------------------------------------------------
 
-- known issues
+\section{Goals}
+\par Looking at past projects we decided to bring a new and unique feature to our game. We decided to make a multi-player game which influenced all subsequent design decisions.
+\par The idea for the gameplay was quickly developed. The \textit{Results} section elaborates extensively how the game works. We discuss more specific goals in this section.
 
-- citations (informal)
+\subsection{Networking}
+\par Implementing a multi-device multiplayer game requires networked communication between the players. Most games use a centralized setup. To (a) not having to operate the server infrastructure and (b) not having to develop a separate server backend, we wanted to utilize direct browser-to-browser communication. This technology has been advanced in recent years, mostly as part of WebRTC.
+\par Our plans for a multi-player game would require synchronization. Because the goal was to randomize the scenes, we couldn't only load static resources. During the game, the player movements would have to be synchronized at a sufficient rate for an interactive gameplay.
+\par Using direct browser-to-browser communication generally provides lower latency than a centralized approach. This makes the game even more interactive. When both players are physically close, the latency is practically unnoticeable.
 
-- individual member contribution
+\subsection{Graphics Software}
+\par We knew from the beginning that our game would require a lot of functionality to support a smooth user experience. We would have to implement first-person controls, use ray-casting to detect when one views another user, perform collision detection, support for multiple scenes, support for networking, ... Thus we put a focus on a modular high-level software architecture for our project.
 
----------
+\subsection{Functionality}
+\par Our initial ideas for additional features went far beyond what we had time to implement. We discussed adding weather, placing power-up items in the world, ... Given careful planing of the software architecture, those features would be reasonable to implement with a considerable time investment.
+\par Considering the time limitation, we created a list of essential features for the game to be usable and focussed on implementing those quickly. Afterwards, we could add features as time allows.
+\par The essential features were: First-person controls, scene bounds, score keeping, mini-map, a basic static player model, and network sync. But to have a not only technically playable but practically usable game, we had a set of very important features: Nice scenes, collision detection, and proper player model with animations.
+\par We managed to implement all essential and utmost important features but not much more in the available time. More on additional features in the \textit{Discussion} section.
 
+
+
+
+% -----------------------------------------------------------------
+
+\section{Execution}
+\par We discuss the development of the project in chronological order. This section focusses on the technical aspects of the project. We discuss the non-technical aspects in sections \textit{Goals} and \textit{Results}.
+
+\subsection{First Person Controls}
+\par walking: keypress handler for wsad keys, 
+\par viewing: pointer lock
+\par scene hierarchy initial: player in scene, camera attached to player, rotate/move entire player coordinate frame, determine forward/right vectors of current camera view, use those for walking offset, determine camera x (right) and y (up) axis in global terms to do rotations
+\par walking with right/forward done; reposition entire player, rotation around y also on entire player, rotation around x on newly introduced head to which camera attached (camera fixed on rotation, order of rotation easy; not quaternion mess)
+
+\subsection{Game State Machine and global state}
+\par maintain state machine for different phases (game start, connecting players, network setup/sync, scene selection and scene generation, gameplay, determining winner and winning screen
+\par global state of important data such as whether player A or player B, scene, network status, ...
+
+\subsection{Networking}
+\par not rely on custom server architecture, direct P2P communication
+requires considering consistency and parallelism challenges when maintaining game state
+\par using WebRTC (web real time communication; also used by some video conferencing services), best supported in Chromium-based, also Safari; issues with Firefox
+\par use public pairing server for discovery of other player; afterward direct browser to browser communication without centralized server
+
+\subsection{Software Architecture}
+
+\subsection{Minimap}
+
+\subsection{Score Keeping}
+
+\subsection{Player Model \& Animations}
+
+\subsection{Scenes \& Scene Selection}
+
+\subsection{Audio}
+
+% ASPECTS
+% - choices
+% - approaches
+% - implementation hurdles
+% - features implemented
+% - diagrams of project architecture
+
+
+
+
+% -----------------------------------------------------------------
+
+\section{Results}
+\par The final game provides a simple user experience. The game can be played by running the java script application locally or visiting \href{https://google.com}{https://roldsi.github.io/shadow-spy/}. It is also possible for one player to use the locally deployed version and the other player to use the web-version.
+\par To initiate a game, one player 'Player A' and the other player chooses 'Player B' on the splashscreen. Player A enters the code shown to player B. This establishes the connection between both browsers. Player A can then configure the game by choosing a scene.
+\begin{itemize}
+	\item \texttt{BaseScene} is a simple plane without any objects and was originally introduced for development purposes.
+	\item \texttt{FlowerHorror} is a flat plane that contains a few flowers at randomized positions.
+	\item \texttt{Terrain} is a complex scene. It contains a randomized elevation profile, randomized distribution of objects such as trees, stones, etc.
+\end{itemize}
+\par As soon as player A choses a scene the game starts for both players. The user is placed at a random position in the world sufficiently far away from the other player. Depending on the browser, it may be necessary to click onto the browser window once to activate first-person controls. One can walk with keys 'wsad' and rotate by moving the cursor.
+\par While walking the world, players can't walk through objects. Further, the light source of the flashlight is linked to the flashlight of the 3D player model. Thus, the light beam will move while walking. The flashlight has a limited range and angle.
+There is also background music.
+\par On the bottom right, the player can see a mini-map of the world with its own position. Above, one can see one's own count and the other player's count. One gains points whenever one sees one's opponent. Peeking from behind an object at the opponent only counts when a sufficiently clear line of sight exists.
+\par If one is observed by the opponent, one doesn't see the opponents score increase immediately. Their gains will only be shown once one is no longer observed to avoid using the score counter as an indicator of the presence of the opponent.
+\par If both players observe each other, they are repositioned to new random locations in the map to avoid a stalemate.
+\par The first player to reach 1000 points the game. As soon as that happens, the game is terminated for both players and notified whether they have won or lost. One can immediately start a new round.
+
+
+
+
+
+% -----------------------------------------------------------------
+
+\section{Discussion}
+\par Any project can be improved arbitrarily. At this point, we are not aware of any big issues or bugs with the game but have various ideas for additional features or possible improvements.
+\par We only list a selection of our ideas here to keep the report reasonably short.
+
+\subsection{Pairing \& Scaling}
+\par Initially, the pairing process required that player A enters a long randomized string provided by the pairing server because every active connection with the pairing server must have a unique id. We avoid manually typing a long random string, we generate a short player code and appending a long game-specific string. This string is likely to be unique but that is not guaranteed.
+\par If the game would be played by hundreds of people simultaneously, it will be likely that the same ID is used by multiple players. The game synchronization will break in that case.
+\par A solution would be a more advanced pairing and discovery protocol. Considering that his is a graphics project at the core, this was out of scope.
+
+\subsection{Customization}
+\par Player A can choose from a limited set of scenes at the beginning of the game. One could add more different scenes and improve the degree of randomization within those scenes.
+\par Additionally, one could provide the user with more customization options such as different characters to choose from.
+
+\subsection{Lighting}
+\par Given the pre-defined player model with its flashlight, there is currently limited variety in scene lighting. The game could become more interesting by adding choices between different types of flashlights: Long-range but narrow, very wide but short-range, ... Having a brighter flashlight is not necessarily an advantage because one can be tracked easier.
+\par A great feature would also be to allow players to turn off their own flashlight. This increases the game complexity because one can try to use the other player's light to stay undetected oneself.
+\par Besides basic flashlights, one could also introduce power-ups that can be gained throughout the game. For instance, a player could gain night vision for a limited time. This would give a one-sided advantage.
+\par An even other option to introduce variety would be weather. Rain and fog could make visibility more difficult. While lightning could add bright momentary global illumination.
+
+
+
+
+% -----------------------------------------------------------------
+
+\section{Ethical Evaluation}
+
+
+
+
+% -----------------------------------------------------------------
+
+\section{Resources}
 - related work
 
-- diagrams of project architecture
-
-- code block if helpful
 
 
 
+% -----------------------------------------------------------------
 
----------
+\section{Contribution}
+by group members
 
-
-document \& justify:
-
-- choices
-
-- approaches
-
-- implementaiton hurdles
-
-- features implemented
-
-- results
 \end{document}
