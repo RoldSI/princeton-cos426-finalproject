@@ -16,10 +16,12 @@ import { LosingScreen, WinningScreen } from './screens/endscreen';
 import { WaitScreen } from './screens/waitscreen';
 import { SceneSelectionScreen } from './screens/sceneselectionscreen';
 import { FlowerHorror } from './scenes/FlowerHorror';
+import { Forest } from './scenes/ForestScene';
 
 export const sceneMap: Map<string, typeof BaseScene> = new Map<string, typeof BaseScene>([
     ['Base Scene', BaseScene],
-    ['Flower Horror', FlowerHorror]
+    ['Flower Horror', FlowerHorror],
+    ['Forest', Forest]
 ]);
 // global state
 export const connectivity = new Connectivity();

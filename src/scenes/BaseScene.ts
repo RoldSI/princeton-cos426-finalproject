@@ -38,8 +38,8 @@ class BaseScene extends Scene {
         const scene: BaseScene = new BaseScene(seed);
         const width = scene.getHalfSize()*2;
         const height = scene.getHalfSize()*2;
-        const geometry = new PlaneGeometry(width, height, 100, 100); // 100 determines the detail of height maps 
-       
+        const geometry = new PlaneGeometry(width, height); // 100 determines the detail of height maps 
+       /*
         for (let i = 0; i < geometry.attributes.position.count; i++) {
             const x = i % geometry.parameters.widthSegments;
             const y = Math.floor(i / geometry.parameters.widthSegments);
@@ -51,7 +51,7 @@ class BaseScene extends Scene {
             // Update the Z position of the vertex (which ends up being the "height") (height of the terrain)
             geometry.attributes.position.setZ(i, heightValue*hillHeight);
         }
-
+        */
         const material = new MeshLambertMaterial({ color: 0x00ff00 });
         const plane = new Mesh(geometry, material);
         plane.rotation.x = -Math.PI / 2;
@@ -94,9 +94,9 @@ class BaseScene extends Scene {
     getHeight(_x: number, _z: number): number { // since the plane is rotated the "height is actually 
         // Now rotating around -pi/2 means player
 
-        const h = this.perlin.noise(_x / hillSpacing, -_z / hillSpacing);
+
        
-        return h*hillHeight;
+        return 0;
     }
 }
 
