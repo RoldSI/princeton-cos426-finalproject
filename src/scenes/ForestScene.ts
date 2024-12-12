@@ -21,7 +21,10 @@ export class Forest extends BaseScene {
 
 
     public grass : Mesh[] = [];
+    public small : Object3D[] = []; //these two are purley astetic -> dont have a hitbox
+
     public trees : Object3D[] = [];
+    public  big : Object3D[] = []; //these two actually exists -> have a hitbox
 
     constructor(seed : number) {
         super(seed);
@@ -44,7 +47,7 @@ export class Forest extends BaseScene {
         scene.world.add(plane);
 
         const loader = new GLTFLoader();
-        const modelPath = new URL(`../objects/NatureModels/nature.gltf`, import.meta.url).href;
+        const modelPath = new URL(`../objects/NatureModels/nature2.gltf`, import.meta.url).href;
         const rng = seedrandom(String(seed));
 
         loader.load(modelPath, (gltf) => {
@@ -54,6 +57,7 @@ export class Forest extends BaseScene {
                 // Check if the child is an instance of THREE.Mesh
                 if (child instanceof Mesh) {
                     
+
                     if(child.name.includes("grass")){
                         scene.grass.push(child)
                     }
@@ -77,38 +81,80 @@ export class Forest extends BaseScene {
                 scene.trees.push(pine3);
             }
 
+            const small1 = model.getObjectByName('pSolid1');
+            const small2 = model.getObjectByName('pSolid2');
+            const small3 = model.getObjectByName('pSolid3');
+            const small4 = model.getObjectByName('pSolid4');
+
+            if(small1 && small2 && small3 && small4){
+                scene.small.push(small1);
+                scene.small.push(small2);
+                scene.small.push(small3);
+                scene.small.push(small4);
+            }
+
+        
+
             const distGrass = 0.5;
             //Place Grass everywhere
-            for(let x = - width/2 + distGrass/2; x < width/2 - distGrass/2; x+= distGrass){
-                for(let z = - height/2 + distGrass/2; z < height/2 - distGrass/2; z+= distGrass){
+            for(let x = - width/2 + distGrass/2; x <= width/2 - distGrass/2; x+= distGrass){
+                for(let z = - height/2 + distGrass/2; z <= height/2 - distGrass/2; z+= distGrass){
                     let dx = rng()*distGrass - distGrass/2; // ranoom in [-0.2, 0.25]
                     let dz = rng()*distGrass - distGrass/2; // ranoom in [-0.2, 0.25]
 
                     let i = Math.floor(rng()*scene.grass.length);
+                    let r = 2*Math.PI*rng();
 
                     let g = scene.grass[i].clone(); 
                     g.scale.set(0.2,0.2,0.2);
-                    g.position.set(x + dx - 2.5, scene.getHeight(x + dx,z + dz) - 1.25, z + dz + 2.5);
-                    console.log("test-a");
+                    let posx = x + dx;
+                    let posz = z + dz;
+                    g.position.set(posx, scene.getHeight(posx,posz),posz);
+                    g.rotateY(r);
+                    scene.add(g);
+
+                }
+            }
+
+            const distSmall = 0.8;
+            //Place Small Stones everywhere
+            for(let x = - width/2 + distSmall/2; x <= width/2 - distSmall/2; x+= distSmall){
+                for(let z = - height/2 + distSmall/2; z <= height/2 - distSmall/2; z+= distSmall){
+                    let dx = rng()*distSmall - distSmall/2; // ranoom in [-0.2, 0.25]
+                    let dz = rng()*distSmall - distSmall/2; // ranoom in [-0.2, 0.25]
+
+                    let i = Math.floor(rng()*scene.small.length);
+                    let r = 2*Math.PI*rng();
+
+                    let g = scene.small[i].clone(); 
+                    g.scale.set(0.015,0.015,0.015);
+                    let posx = x + dx;
+                    let posz = z + dz;
+                    g.position.set(posx, scene.getHeight(posx,posz),posz);
+                    g.rotateY(r);
                     scene.add(g);
 
                 }
             }
             
+
             //Place Trees everywhere
             const distTrees = 3;
-            for(let x = - width/2 + distTrees/2; x < width/2 - distTrees/2; x+= distTrees){
-                for(let z = - height/2 + distTrees/2; z < height/2 - distTrees/2; z+= distTrees){
+            for(let x = - width/2 + distTrees/2; x <= width/2 - distTrees/2; x+= distTrees){
+                for(let z = - height/2 + distTrees/2; z <= height/2 - distTrees/2; z+= distTrees){
                     let dx = (rng()*distTrees - distTrees/2)*0.8; 
                     let dz =(rng()*distTrees - distTrees/2)*0.8; //0.8 to prevent trees from spawning in each other
 
                     let i = Math.floor(rng()*scene.trees.length);
+                    let r = 2*Math.PI*rng();
 
                     let t = scene.trees[i].clone(); 
                     
                     t.scale.set(0.2,0.2,0.2);
-                    t.position.set(x + dx -2.5, scene.getHeight(x + dx,z + dz), z + dz + 2.5);
-                    console.log("test-b");
+                    let posx = x + dx;
+                    let posz = z + dz;
+                    t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
+                    t.rotateY(r);
                     scene.add(t);
 
                 }
