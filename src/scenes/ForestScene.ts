@@ -88,7 +88,7 @@ export class Forest extends BaseScene {
 
                     let g = scene.grass[i].clone(); 
                     g.scale.set(0.2,0.2,0.2);
-                    g.position.set(x + dx, scene.getHeight(x + dx,z + dz) - 1, z + dz);
+                    g.position.set(x + dx - 2.5, scene.getHeight(x + dx,z + dz) - 1.25, z + dz + 2.5);
                     console.log("test-a");
                     scene.add(g);
 
@@ -96,9 +96,9 @@ export class Forest extends BaseScene {
             }
             
             //Place Trees everywhere
-            const distTrees = 2;
-            for(let x = - width/2 + distTrees; x < width/2 - distTrees; x+= distTrees){
-                for(let z = - height/2 + distTrees; z < height/2 - distTrees; z+= distTrees){
+            const distTrees = 3;
+            for(let x = - width/2 + distTrees/2; x < width/2 - distTrees/2; x+= distTrees){
+                for(let z = - height/2 + distTrees/2; z < height/2 - distTrees/2; z+= distTrees){
                     let dx = (rng()*distTrees - distTrees/2)*0.8; 
                     let dz =(rng()*distTrees - distTrees/2)*0.8; //0.8 to prevent trees from spawning in each other
 
@@ -107,7 +107,7 @@ export class Forest extends BaseScene {
                     let t = scene.trees[i].clone(); 
                     
                     t.scale.set(0.2,0.2,0.2);
-                    t.position.set(x + dx, scene.getHeight(x + dx,z + dz), z + dz);
+                    t.position.set(x + dx -2.5, scene.getHeight(x + dx,z + dz), z + dz + 2.5);
                     console.log("test-b");
                     scene.add(t);
 
