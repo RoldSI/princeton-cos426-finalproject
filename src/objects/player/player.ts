@@ -107,7 +107,7 @@ class Player extends Group {
             orientation: this.getOrientation(),
             score: this.score,
             publicScore: this.publicScore,
-            currentAnimation : this.currentAnimation
+            currentAnimation : this.currentAnimation,
             seeing: this.seeing
         };
     }
