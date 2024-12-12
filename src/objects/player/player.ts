@@ -1,4 +1,4 @@
-import {Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, AnimationMixer , AnimationAction} from 'three';
+import {Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, AnimationMixer , AnimationAction } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, globalState } from '../../app';
 
@@ -29,10 +29,26 @@ class Player extends Group {
         const loader = new GLTFLoader();
         this.actions = {};
         this.activeAction = undefined;
-      
+
+        const flashlight = new BasicFlashlight();
+        this.flashlight = flashlight;
+        this.flashlight.position.set(-2.2, 6.5, 2.8);
+        this.flashlight.rotation.set(0, Math.PI, 0);
 
         loader.load(MODEL, (gltf) => {
             const model = gltf.scene;
+            const lanternaCylinder = model.children[0] // Idle
+                .children[1] // spine_001
+                .children[0] // spine_002
+                .children[0] // spine_003
+                .children[1] // shoulder_R
+                .children[0] // arm_R_upper
+                .children[0] // arm_R_lower
+                .children[0] // hand_R
+                .children[0] // finger1_R
+                .children[0] // finger1_R_001
+                .children[1];
+            lanternaCylinder.add(this.flashlight);
             model.scale.set(0.12,0.12,0.12); // adjusting size/rotation as needed (size might) 
             model.rotation.y = Math.PI*33/32;       
               
@@ -64,10 +80,6 @@ class Player extends Group {
 
         this.camera = new PerspectiveCamera();
         this.head.add(this.camera);
-
-        const flashlight = new BasicFlashlight();
-        this.flashlight = flashlight;
-        this.head.add(flashlight);
 
         this.audioListener = new AudioListener();
         this.camera.add(this.audioListener);
