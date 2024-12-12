@@ -23,7 +23,7 @@ class Player extends Group {
 
     
 
-    constructor(pos: {x: number, z: number}, isMe: boolean, character: string = 'flower-blue') {
+    constructor(pos: {x: number, z: number}, isMe: boolean) {
         super();
         
         this.currentAnimation = "Idle";
