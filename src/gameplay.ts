@@ -189,14 +189,15 @@ export class GamePlay {
             this.player.currentAnimation = "Idle";
         }
 
-        this.player.fadeToAction(this.player.currentAnimation);
-        this.player_other.fadeToAction(this.player_other.currentAnimation);
+        this.player.updateAnimation();
         if(this.player.animationMixer != undefined){
             this.player.animationMixer.update(delta);
         }
+        this.player_other.updateAnimation();
         if(this.player_other.animationMixer != undefined){
             this.player_other.animationMixer.update(delta);
         }
+
 
         this.renderer.render(this.scene, this.player.camera);
         this.minimapRenderer.render(this.minimapScene, this.minimapCamera);

@@ -25,8 +25,6 @@ class Player extends Group {
     constructor(_xPosition: number = 0, _zPosition: number = 0) {
         super();
         
-       
-
         this.currentAnimation = "Idle";
         const loader = new GLTFLoader();
         this.actions = {};
@@ -34,15 +32,14 @@ class Player extends Group {
       
 
         loader.load(MODEL, (gltf) => {
-
             const model = gltf.scene;
             model.scale.set(0.12,0.12,0.12); // adjusting size/rotation as needed (size might) 
-            model.rotation.y = Math.PI*9/8;       
+            model.rotation.y = Math.PI*33/32;       
               
             this.add(model);
 
             this.animationMixer = new AnimationMixer(model);
-            this.animationMixer.timeScale = 5;
+            this.animationMixer.timeScale = 1.5;
             this.animations = gltf.animations;
 
             this.actions['Idle'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'Idle')!);
@@ -51,13 +48,8 @@ class Player extends Group {
             this.actions['WalkRight'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkRight')!);
             this.actions['WalkBack'] = this.animationMixer.clipAction(gltf.animations.find((clip) => clip.name === 'WalkBack')!);
 
-            this.actions['WalkLeft'].timeScale = 8; // feels better imo needs tuning
-            this.actions['WalkRight'].timeScale = 8;
-
             this.activeAction = this.actions['Idle'];
             this.activeAction.play();
-        
-    
         });
 
        
@@ -162,7 +154,6 @@ class Player extends Group {
 
 
     update(timeStamp: number): void {
-        
         this.sendPlayerData(timeStamp);
         this.updateScore(timeStamp);
         this.updatePublicScore(timeStamp);
@@ -205,15 +196,22 @@ class Player extends Group {
         this.head.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, x))
     }
 
-    fadeToAction(newActionName: string, duration: number = 0.5): void {
-        const newAction = this.actions[newActionName];
-        
+    updateAnimation(duration: number = 0.2): void {
+        if (this.animationMixer == undefined || this.activeAction == undefined) {
+          return
+        }
+        const newAction = this.actions[this.currentAnimation];
+        if(this.currentAnimation == "Idle" || this.currentAnimation == "WalkForward" || this.currentAnimation == "WalkBack") {
+            this.animationMixer.timeScale = 1.7;
+        } else {
+            this.animationMixer.timeScale = 3.5;
+        }
         // If the new action is different from the current one, fade to it
         if (newAction && newAction !== this.activeAction) {
           if (this.activeAction) {
+            newAction.reset().play();
             this.activeAction.crossFadeTo(newAction, duration, true);
           }
-          newAction.reset().play(); // Reset and play the new action
           this.activeAction = newAction;  // Update the activeAction
         }
       }
