@@ -21,12 +21,15 @@ export class FlowerHorror extends BaseScene {
         const plane = new Mesh(geometry, material);
         plane.rotation.x = -Math.PI / 2;
         scene.world.add(plane);
+        const rng = seedrandom(String(seed));
 
-        for (let i = 0; i < 10; i++) { // Adjust number of flowers as needed
-            const x = Math.random() * 2 * scene.getHalfSize() - scene.getHalfSize();
-            const z = Math.random() * 2 * scene.getHalfSize() - scene.getHalfSize();
+        for (let i = 0; i < 20; i++) { // Adjust number of flowers as needed
+            const x = rng() * 2 * scene.getHalfSize() - scene.getHalfSize();
+            const z = rng()* 2 * scene.getHalfSize() - scene.getHalfSize();
             const flower = new FlowerYellow();
+            const r = rng()*Math.PI*2;
             flower.position.set(x, 0, z); // Important currently disabled for debugging
+            flower.rotateY(r);
             scene.world.add(flower);
             scene.addCollisionObject(flower);
             scene.flowers.push({ x, z });
@@ -35,7 +38,7 @@ export class FlowerHorror extends BaseScene {
         // We reuse the grass from the forest
         const loader = new GLTFLoader();
         const modelPath = new URL(`../objects/NatureModels/nature2.gltf`, import.meta.url).href;
-        const rng = seedrandom(String(seed));
+        
         loader.load(modelPath, (gltf) => {
             const model = gltf.scene;
             // Setup the models in the array
