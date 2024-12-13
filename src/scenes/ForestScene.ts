@@ -1,20 +1,11 @@
 
-import { Mesh, MeshLambertMaterial, Object3D, PlaneGeometry } from "three";
+import { Mesh, MeshLambertMaterial, Object3D, PlaneGeometry} from "three";
 import BaseScene from "./BaseScene";
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import seedrandom from "seedrandom";
 
 
-
-// Nature 
-/*
-    - pcone 4,5,6,7, 16, 17, 18, 19 are "Grass"
-    - pcone 13, 14, 15,  are "Pine Trees"
-    - pcone 21, 22, 23 are "Regualr trees"
-    - psolid 1,2,3,4 are "Stones "
-    - psphere 5,6 are "Stones (Giant)"
-*/
 
 
 export class Forest extends BaseScene {
@@ -143,8 +134,8 @@ export class Forest extends BaseScene {
             }
             
 
-            //Place Trees everywhere
-            const distTrees = 3;
+            //Place Trees everywhere (and some big stones)
+            const distTrees = 5;
             for(let x = - width/2 + distTrees/2; x <= width/2 - distTrees/2; x+= distTrees){
                 for(let z = - height/2 + distTrees/2; z <= height/2 - distTrees/2; z+= distTrees){
                     let dx = (rng()*distTrees - distTrees/2)*0.8; 
@@ -159,12 +150,26 @@ export class Forest extends BaseScene {
                         t = scene.stones[i].clone();
                         r = 2*Math.PI*rng();
                         t.scale.set(0.15,0.15,0.15);
+                        let posx = x + dx;
+                        let posz = z + dz;
+                        t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
+                        t.rotateY(r);
+                        scene.add(t);
+                        scene.addCollisionObject(t);
+
                     }
+
                     else{
                         i = Math.floor(rng()*scene.trees.length);
                         t = scene.trees[i].clone(); 
                         r = 2*Math.PI*rng();
                         t.scale.set(0.2,0.2,0.2);
+                        let posx = x + dx;
+                        let posz = z + dz;
+                        t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
+                        t.rotateY(r);
+                        scene.add(t);
+                        scene.addCollisionObject(t);
                     }
                     
                     
@@ -172,11 +177,7 @@ export class Forest extends BaseScene {
                     
                     
                     
-                    let posx = x + dx;
-                    let posz = z + dz;
-                    t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
-                    t.rotateY(r);
-                    scene.add(t);
+                    
 
                 }
             }

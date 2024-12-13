@@ -1,8 +1,7 @@
 import { Group, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene } from 'three';
 import PerlinNoise from '../utilities/perlin_noise';
 
-const hillSpacing = 50;
-const hillHeight = 3;
+
 
 class BaseScene extends Scene {
     world: Group;
