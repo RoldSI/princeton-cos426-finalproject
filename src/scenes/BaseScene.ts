@@ -1,11 +1,10 @@
-<<<<<<< HEAD
+
 import { Group, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene, AudioListener, Audio, AudioLoader } from 'three';
-=======
-import { Group, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene } from 'three';
+
+
 import PerlinNoise from '../utilities/perlin_noise';
 
 
->>>>>>> Forest
 
 class BaseScene extends Scene {
     world: Group;

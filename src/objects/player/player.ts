@@ -1,4 +1,4 @@
-import {Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, Box3, AnimationMixer , AnimationAction } from 'three';
+import { AnimationMixer, AnimationAction, Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, Box3 } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, gameStateMachine, globalState } from '../../app';
 
@@ -21,11 +21,11 @@ class Player extends Group {
     activeAction : AnimationAction | undefined; //used for the actual animation
     currentAnimation : string; 
 
-    
+
 
     constructor(pos: {x: number, z: number}, isMe: boolean) {
         super();
-        
+
         this.currentAnimation = "Idle";
         const loader = new GLTFLoader();
         this.actions = {};
@@ -89,7 +89,7 @@ class Player extends Group {
 
         this.audioListener = new AudioListener();
         if (isMe) {
-            this.camera.add(this.audioListener);
+        this.camera.add(this.audioListener);
             globalState.scene!.registerAudio(this.audioListener);
         }
 
@@ -236,6 +236,9 @@ class Player extends Group {
     
         // Check against all objects in the scene
         for (const object of globalState.scene!.collisionObjects) {
+            if(object.name.includes('solid') || object.name.includes('sphere')){ // rock collison
+
+            }
             const objectBox = new Box3().setFromObject(object);
             if (playerBox.intersectsBox(objectBox)) {
                 return true; // Collision detected
@@ -281,7 +284,7 @@ class Player extends Group {
           }
           this.activeAction = newAction;  // Update the activeAction
         }
-      }
+    }
 }
 
 export default Player;
