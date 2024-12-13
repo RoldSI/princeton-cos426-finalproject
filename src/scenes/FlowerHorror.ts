@@ -1,10 +1,12 @@
 import { Mesh, MeshLambertMaterial, PlaneGeometry } from "three";
 import BaseScene from "./BaseScene";
 import FlowerYellow from "../objects/flower-yellow/flowerYellow";
+import seedrandom from "seedrandom";
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
 
 export class FlowerHorror extends BaseScene {
     flowers: Array<{ x: number; z: number }>;
-
+    grass : Mesh[] = [];
     constructor(seed : number) {
         super(seed);
         this.flowers = [];
@@ -15,7 +17,7 @@ export class FlowerHorror extends BaseScene {
 
         const scene: FlowerHorror = new FlowerHorror(seed);
         const geometry = new PlaneGeometry(scene.getHalfSize()*2, scene.getHalfSize()*2);
-        const material = new MeshLambertMaterial({ color: 0xff8080 });
+        const material = new MeshLambertMaterial({ color: 0x00ff00 });
         const plane = new Mesh(geometry, material);
         plane.rotation.x = -Math.PI / 2;
         scene.world.add(plane);
@@ -24,11 +26,54 @@ export class FlowerHorror extends BaseScene {
             const x = Math.random() * 2 * scene.getHalfSize() - scene.getHalfSize();
             const z = Math.random() * 2 * scene.getHalfSize() - scene.getHalfSize();
             const flower = new FlowerYellow();
-            flower.position.set(x, 0, z); // Importnat currently disabled for debugging
+            flower.position.set(x, 0, z); // Important currently disabled for debugging
             scene.world.add(flower);
             scene.addCollisionObject(flower);
             scene.flowers.push({ x, z });
         }
+
+        // We reuse the grass from the forest
+        const loader = new GLTFLoader();
+        const modelPath = new URL(`../objects/NatureModels/nature2.gltf`, import.meta.url).href;
+        const rng = seedrandom(String(seed));
+        loader.load(modelPath, (gltf) => {
+            const model = gltf.scene;
+            // Setup the models in the array
+            model.traverse((child) => {
+                // Check if the child is an instance of THREE.Mesh
+                if (child instanceof Mesh) {
+                    
+
+                    if(child.name.includes("grass")){
+                        scene.grass.push(child)
+                    }
+
+                }
+            });
+            const width = 2*scene.getHalfSize();
+            const height = 2*scene.getHalfSize();
+
+            const distGrass = 0.5;
+            //Place Grass everywhere
+            for(let x = - width/2 + distGrass/2; x <= width/2 - distGrass/2; x+= distGrass){
+                for(let z = - height/2 + distGrass/2; z <= height/2 - distGrass/2; z+= distGrass){
+                    let dx = rng()*distGrass - distGrass/2; // ranoom in [-0.2, 0.25]
+                    let dz = rng()*distGrass - distGrass/2; // ranoom in [-0.2, 0.25]
+
+                    let i = Math.floor(rng()*scene.grass.length);
+                    let r = 2*Math.PI*rng();
+
+                    let g = scene.grass[i].clone(); 
+                    g.scale.set(0.5,0.5,0.5);
+                    let posx = x + dx;
+                    let posz = z + dz;
+                    g.position.set(posx, scene.getHeight(posx,posz),posz);
+                    g.rotateY(r);
+                    scene.add(g);
+
+                }
+            }
+        });
 
         console.log('FlowerHorro game/scene generated!');
 

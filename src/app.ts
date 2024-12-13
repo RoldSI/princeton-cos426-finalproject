@@ -21,11 +21,10 @@ import { Desert } from './scenes/DesertScene';
 import { Winter } from './scenes/WinterScene';
 
 export const sceneMap: Map<string, typeof BaseScene> = new Map<string, typeof BaseScene>([
-    ['Base Scene', BaseScene],
+    ['Mixed Woodlands', Forest],
     ['Flower Horror', FlowerHorror],
-    ['Forest', Forest],
     ['Desert', Desert],
-    ['Winter', Winter]
+    ['Winter Village', Winter]
 ]);
 // global state
 export const connectivity = new Connectivity();
