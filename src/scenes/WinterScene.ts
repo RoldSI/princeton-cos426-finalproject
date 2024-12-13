@@ -161,8 +161,12 @@ export class Winter extends BaseScene {
                         t.scale.set(11,11,11);
                         scene.add(t);
                         let f = t.clone();
-                        f.scale.set(0.75,0.75,0.75)
-                        scene.addCollisionObject(f);
+                        
+                        f.scale.set(8,8,8);
+                        if(f.name.includes('leaf')){
+                            f.scale.set(2,2,2);
+                        }
+                        scene.addCollisionObject(f, false);
                     }
 
                 }

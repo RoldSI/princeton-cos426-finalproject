@@ -138,16 +138,17 @@ export class Desert extends BaseScene {
                     t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
                     t.rotateY(r);
                     t.scale.set(4,4,4);
-                    scene.add(t);
+                    scene.world.add(t);
                     if(t.name == "tree3" || t.name == "tree4"){ // Because of coconut collision feels awful otherwise
                         let f = t.clone();
-                        f.scale.set(0.25,0.25,0.25)
-                        scene.addCollisionObject(f);
+                        f.scale.set(1,1,1)
+                        scene.addCollisionObject(f, false);
+                        
                     }
                     else{
                         let f = t.clone();
-                        f.scale.set(0.75,0.75,0.75)
-                        scene.addCollisionObject(f);
+                        f.scale.set(2,2,2)
+                        scene.addCollisionObject(f, false);
                     }
                 }
             }

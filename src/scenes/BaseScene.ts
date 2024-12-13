@@ -22,9 +22,11 @@ class BaseScene extends Scene {
         this.perlin = new PerlinNoise(this.seed);
     }
 
-    addCollisionObject(object: Object3D): void {
+    addCollisionObject(object: Object3D, physical : boolean = true ): void {
         this.collisionObjects.push(object);
-        this.world.add(object);
+        if(physical){
+            this.world.add(object);
+        }
     }
 
     removeCollisionObject(object: Object3D): void {

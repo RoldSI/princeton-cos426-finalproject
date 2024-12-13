@@ -107,7 +107,7 @@ export class Forest extends BaseScene {
                     let posz = z + dz;
                     g.position.set(posx, scene.getHeight(posx,posz),posz);
                     g.rotateY(r);
-                    scene.add(g);
+                    scene.world.add(g);
 
                 }
             }
@@ -128,7 +128,7 @@ export class Forest extends BaseScene {
                     let posz = z + dz;
                     g.position.set(posx, scene.getHeight(posx,posz),posz);
                     g.rotateY(r);
-                    scene.add(g);
+                    scene.world.add(g);
 
                 }
             }
@@ -154,7 +154,7 @@ export class Forest extends BaseScene {
                         let posz = z + dz;
                         t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
                         t.rotateY(r);
-                        scene.add(t);
+                        scene.world.add(t);
                         scene.addCollisionObject(t);
 
                     }
@@ -169,7 +169,9 @@ export class Forest extends BaseScene {
                         t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
                         t.rotateY(r);
                         scene.add(t);
-                        scene.addCollisionObject(t);
+                        let f = t.clone();
+                        f.scale.set(0.15,0.15,0.15);
+                        scene.addCollisionObject(f, false);
                     }
                     
                     
