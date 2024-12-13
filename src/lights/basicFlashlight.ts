@@ -1,17 +1,18 @@
 import { Group, SpotLight, Object3D, Vector3 } from 'three';
 
 class BasicFlashlight extends Group {
+    light : SpotLight;
     constructor() {
         super();
 
-        const flashlight = new SpotLight(0xffffff, 2, 10, Math.PI / 8, 0.3, 1); // Narrower angle, soft edges
-        flashlight.position.set(0, 0, 0);
-        this.add(flashlight);
+        this.light = new SpotLight(0xffffff, 2, 10, Math.PI / 8, 0.3, 1); // Narrower angle, soft edges
+        this.light.position.set(0, 0, 0);
+        this.add(this.light);
 
         const target = new Object3D();
         target.position.set(0, 0, -1);
         this.add(target);
-        flashlight.target = target;
+        this.light.target = target;
     }
 
     getDistance(): number {

@@ -2,6 +2,7 @@ import { WebGLRenderer, Vector3, OrthographicCamera, Scene, Mesh, SphereGeometry
 import BaseScene from './scenes/BaseScene';
 import Player from './objects/player/player';
 
+
 export class GamePlay {
     // config params
     movementSpeed: number; // in m/s
@@ -61,6 +62,7 @@ export class GamePlay {
             if (event.key === 'a') this.keys.a = false;
             if (event.key === 's') this.keys.s = false;
             if (event.key === 'd') this.keys.d = false;
+            if (event.key === 'f') this.player.lightIsOn = !(this.player.lightIsOn);
         });
     }
 
@@ -75,11 +77,30 @@ export class GamePlay {
         if (this.keys.s) positionUpdate.add(forward.multiplyScalar(-this.movementSpeed * delta));
         if (this.keys.a) positionUpdate.add(right.multiplyScalar(-this.movementSpeed * delta));
         if (this.keys.d) positionUpdate.add(right.multiplyScalar(this.movementSpeed * delta));
+        
+        // Flashlight 
+        this.handleLights();
+
         this.player.modifyPosition(positionUpdate);
         this.playerDot.position.set(this.player.position.x, 0, this.player.position.z);
         
        
  
+    }
+
+    handleLights() : void{
+        if(this.player.lightIsOn){
+            this.player.flashlight.light.intensity = 2;
+        }
+        else{
+            this.player.flashlight.light.intensity = 0;
+        }
+        if(this.player_other.lightIsOn){
+            this.player_other.flashlight.light.intensity = 2;
+        }
+        else{
+            this.player_other.flashlight.light.intensity = 0;
+        }
     }
 
     constructMinimapScene(): void {

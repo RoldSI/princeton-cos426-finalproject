@@ -20,12 +20,13 @@ class Player extends Group {
     actions : { [key: string]: THREE.AnimationAction };
     activeAction : AnimationAction | undefined; //used for the actual animation
     currentAnimation : string; 
+    lightIsOn : boolean;
 
 
 
     constructor(pos: {x: number, z: number}, isMe: boolean) {
         super();
-
+        this.lightIsOn = true;
         this.currentAnimation = "Idle";
         const loader = new GLTFLoader();
         this.actions = {};
@@ -109,7 +110,8 @@ class Player extends Group {
             score: this.score,
             publicScore: this.publicScore,
             currentAnimation : this.currentAnimation,
-            seeing: this.seeing
+            seeing: this.seeing,
+            lightIsOn : this.lightIsOn
         };
     }
 
@@ -126,6 +128,7 @@ class Player extends Group {
         this.publicScore = json.publicScore;
         this.currentAnimation = json.currentAnimation;
         this.seeing = json.seeing;
+        this.lightIsOn = json.lightIsOn;
     }
 
     sendPlayerData(timeStamp: number): void {
@@ -175,7 +178,9 @@ class Player extends Group {
         }
 
         this.seeing = true;
-        this.score += 1;
+        if(this.flashlight.light.intensity != 0){
+             this.score += 1;
+        }
     }
 
     updatePublicScore(_timeStamp: number): void {

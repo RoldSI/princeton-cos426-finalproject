@@ -19,7 +19,7 @@ export class WaitScreen {
 
         // Add a static notice
         const notice = document.createElement('div');
-        notice.textContent = "If the game doesn't start in a few seconds, refresh - you entered an invalid game id.";
+        notice.textContent = "The other player is currently selecting a scene, if this is not happening an invalid ID was entered";
         notice.style.color = 'white';
         notice.style.textAlign = 'center';
         notice.style.padding = '20px';
