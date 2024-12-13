@@ -21,6 +21,7 @@ import { Desert } from './scenes/DesertScene';
 import { Winter } from './scenes/WinterScene';
 
 export const sceneMap: Map<string, typeof BaseScene> = new Map<string, typeof BaseScene>([
+    ["None", BaseScene],
     ['Mixed Woodlands', Forest],
     ['Flower Horror', FlowerHorror],
     ['Desert', Desert],
