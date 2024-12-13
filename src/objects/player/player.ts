@@ -243,6 +243,7 @@ class Player extends Group {
         }
         return false; // No collision
     }
+    
 
     getOrientation(): { x: number; y: number } {
         return {

@@ -16,10 +16,12 @@ import { LosingScreen, WinningScreen } from './screens/endscreen';
 import { WaitScreen } from './screens/waitscreen';
 import { SceneSelectionScreen } from './screens/sceneselectionscreen';
 import { FlowerHorror } from './scenes/FlowerHorror';
+import { Forest } from './scenes/ForestScene';
 
 export const sceneMap: Map<string, typeof BaseScene> = new Map<string, typeof BaseScene>([
     ['Base Scene', BaseScene],
-    ['Flower Horror', FlowerHorror]
+    ['Flower Horror', FlowerHorror],
+    ['Forest', Forest]
 ]);
 // global state
 export const connectivity = new Connectivity();
@@ -71,7 +73,8 @@ const States: StateMap = {
             console.log("Updating state if necessary");
             if (sceneSelectionScreen.selectedScene != null) {
                 if (globalState.gamePlay == undefined) {
-                    const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate();
+                    console.log(connectivity.seed);
+                    const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate(connectivity.seed);
                     globalState.scene = scene;
                     const startPositions = scene.getStartPositions();
                     const playerA = new Player(startPositions[0], true);
