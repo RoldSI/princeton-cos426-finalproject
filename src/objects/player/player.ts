@@ -33,9 +33,10 @@ class Player extends Group {
 
         const flashlight = new BasicFlashlight();
         this.flashlight = flashlight;
+        /*
         this.flashlight.position.set(-2.2, 6.5, 2.8);
         this.flashlight.rotation.set(0, Math.PI, 0);
-
+        */
         loader.load(MODEL, (gltf) => {
             const model = gltf.scene;
             const lanternaCylinder = model.children[0] // Idle
@@ -49,7 +50,7 @@ class Player extends Group {
                 .children[0] // finger1_R
                 .children[0] // finger1_R_001
                 .children[1];
-            lanternaCylinder.add(this.flashlight);
+            //lanternaCylinder.add(this.flashlight);
             model.scale.set(0.12,0.12,0.12); // adjusting size/rotation as needed (size might) 
             model.rotation.y = Math.PI*33/32;       
               
@@ -79,7 +80,7 @@ class Player extends Group {
         this.head = new Object3D();
         this.head.rotation.order = 'YXZ';
         
-
+        this.head.add(this.flashlight);
         this.head.position.set(0, 1.8, -0.5); // 054 prevents you from looking inside the char when looking down
                                               // Downside being the camera is not really where the head is however imo it feels natural
         this.add(this.head);

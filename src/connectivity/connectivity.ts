@@ -73,10 +73,11 @@ export class Connectivity {
                     globalState.startOther = true;
                     break;
                 case 'player':
-                    if (globalState.game<Play) {
+                    if (globalState.gamePlay) {
                         globalState.gamePlay.player_other.updateFromJSON(data.content);
                     }
                     break;
+
                 case 'end':
                     globalState.gamePlay!.player_other.updateFromJSON(data.content);
                     globalState.endOther = true;

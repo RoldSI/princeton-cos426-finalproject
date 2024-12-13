@@ -2,11 +2,10 @@ import { createNoise2D } from 'simplex-noise';
 import alea from 'alea';
 
 class PerlinNoise {
-  public noise: any;
+  public noise: (x: number, y: number) => number;
 
   constructor(seed: number) {
-    console.log("Perlin", seed);
-    const prng = alea(seed);
+    const prng = alea(String(seed));
     this.noise = createNoise2D(prng);
 
   }

@@ -22,7 +22,7 @@ export class Forest extends BaseScene {
     }
 
     static generate(seed : number): BaseScene {
-        console.log('Generating game/scene!');
+        
 
         const scene: Forest = new Forest(seed);
         const width = scene.getHalfSize()*2;
