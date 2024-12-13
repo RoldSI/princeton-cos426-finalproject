@@ -18,13 +18,14 @@ import { SceneSelectionScreen } from './screens/sceneselectionscreen';
 import { FlowerHorror } from './scenes/FlowerHorror';
 import { Forest } from './scenes/ForestScene';
 import { Desert } from './scenes/DesertScene';
-
+import { Winter } from './scenes/WinterScene';
 
 export const sceneMap: Map<string, typeof BaseScene> = new Map<string, typeof BaseScene>([
     ['Base Scene', BaseScene],
     ['Flower Horror', FlowerHorror],
     ['Forest', Forest],
-    ['Desert', Desert]
+    ['Desert', Desert],
+    ['Winter', Winter]
 ]);
 // global state
 export const connectivity = new Connectivity();

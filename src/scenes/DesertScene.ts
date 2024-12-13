@@ -53,10 +53,10 @@ export class Desert extends BaseScene {
             const tree3 = model.getObjectByName('Palm1');
             const tree4 = model.getObjectByName('palm2');
             const stone1 = model.getObjectByName('Stone1');
-            const stone2 = model.getObjectByName('Stone2');
+            //const stone2 = model.getObjectByName('Stone2'); looks odd in game
             const stone3 = model.getObjectByName('Stone3');
 
-            const small1 = model.getObjectByName('small stone');
+            // const small1 = model.getObjectByName('small stone'); doesnt load properly
             const small2 = model.getObjectByName('smallstone2');
             const grass1 = model.getObjectByName('Grass1');
             const grass2 = model.getObjectByName('grass2');
@@ -64,7 +64,7 @@ export class Desert extends BaseScene {
             const flower2 = model.getObjectByName('flower2');
             const flower3 = model.getObjectByName('flower3');
 
-            if(cactus1 && cactus2 && cactus3 && cactus4 && tree1 && tree2 && tree3 && tree4 && stone1 && stone2 && stone3){
+            if(cactus1 && cactus2 && cactus3 && cactus4 && tree1 && tree2 && tree3 && tree4 && stone1 && stone3){
                 console.log("check1");
                 scene.collision.push(cactus1);
                 scene.collision.push(cactus2);
@@ -75,7 +75,6 @@ export class Desert extends BaseScene {
                 scene.collision.push(tree3);
                 scene.collision.push(tree4);
                 scene.collision.push(stone1);
-                scene.collision.push(stone2);
                 scene.collision.push(stone3);
 
 
@@ -109,7 +108,7 @@ export class Desert extends BaseScene {
                     let r = 2*Math.PI*rng();
 
                     let g = scene.nocollision[i].clone(); 
-                    g.scale.set(2,2,2);
+                    g.scale.set(3,3,3);
                     let posx = x + dx;
                     let posz = z + dz;
                     g.position.set(posx, scene.getHeight(posx,posz),posz);
