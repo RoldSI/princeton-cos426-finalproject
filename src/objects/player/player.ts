@@ -1,4 +1,4 @@
-import {Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, Box3, AnimationMixer , AnimationAction } from 'three';
+import { AnimationMixer, AnimationAction, Group, PerspectiveCamera, AudioListener, Object3D, Vector3, Raycaster, Box3 } from 'three';
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, gameStateMachine, globalState } from '../../app';
 
@@ -20,12 +20,13 @@ class Player extends Group {
     actions : { [key: string]: THREE.AnimationAction };
     activeAction : AnimationAction | undefined; //used for the actual animation
     currentAnimation : string; 
+    lightIsOn : boolean;
 
-    
+
 
     constructor(pos: {x: number, z: number}, isMe: boolean) {
         super();
-        
+        this.lightIsOn = true;
         this.currentAnimation = "Idle";
         const loader = new GLTFLoader();
         this.actions = {};
@@ -33,9 +34,10 @@ class Player extends Group {
 
         const flashlight = new BasicFlashlight();
         this.flashlight = flashlight;
+        /*
         this.flashlight.position.set(-2.2, 6.5, 2.8);
         this.flashlight.rotation.set(0, Math.PI, 0);
-
+        */
         loader.load(MODEL, (gltf) => {
             const model = gltf.scene;
             const lanternaCylinder = model.children[0] // Idle
@@ -49,7 +51,7 @@ class Player extends Group {
                 .children[0] // finger1_R
                 .children[0] // finger1_R_001
                 .children[1];
-            lanternaCylinder.add(this.flashlight);
+            //lanternaCylinder.add(this.flashlight);
             model.scale.set(0.12,0.12,0.12); // adjusting size/rotation as needed (size might) 
             model.rotation.y = Math.PI*33/32;       
               
@@ -79,7 +81,7 @@ class Player extends Group {
         this.head = new Object3D();
         this.head.rotation.order = 'YXZ';
         
-
+        this.head.add(this.flashlight);
         this.head.position.set(0, 1.8, -0.5); // 054 prevents you from looking inside the char when looking down
                                               // Downside being the camera is not really where the head is however imo it feels natural
         this.add(this.head);
@@ -89,7 +91,7 @@ class Player extends Group {
 
         this.audioListener = new AudioListener();
         if (isMe) {
-            this.camera.add(this.audioListener);
+        this.camera.add(this.audioListener);
             globalState.scene!.registerAudio(this.audioListener);
         }
 
@@ -108,7 +110,8 @@ class Player extends Group {
             score: this.score,
             publicScore: this.publicScore,
             currentAnimation : this.currentAnimation,
-            seeing: this.seeing
+            seeing: this.seeing,
+            lightIsOn : this.lightIsOn
         };
     }
 
@@ -125,6 +128,7 @@ class Player extends Group {
         this.publicScore = json.publicScore;
         this.currentAnimation = json.currentAnimation;
         this.seeing = json.seeing;
+        this.lightIsOn = json.lightIsOn;
     }
 
     sendPlayerData(timeStamp: number): void {
@@ -174,7 +178,9 @@ class Player extends Group {
         }
 
         this.seeing = true;
-        this.score += 1;
+        if(this.flashlight.light.intensity != 0){
+             this.score += 1;
+        }
     }
 
     updatePublicScore(_timeStamp: number): void {
@@ -229,13 +235,16 @@ class Player extends Group {
         }
     }
 
-    private isColliding(newPosition: Vector3): boolean {
+     isColliding(newPosition: Vector3): boolean {
         // Create a bounding box for the player at the new position
         const playerBox = new Box3().setFromObject(this);
         playerBox.translate(newPosition.sub(this.position)); // Adjust bounding box to new position
     
         // Check against all objects in the scene
         for (const object of globalState.scene!.collisionObjects) {
+            if(object.name.includes('solid') || object.name.includes('sphere')){ // rock collison
+
+            }
             const objectBox = new Box3().setFromObject(object);
             if (playerBox.intersectsBox(objectBox)) {
                 return true; // Collision detected
@@ -243,6 +252,7 @@ class Player extends Group {
         }
         return false; // No collision
     }
+    
 
     getOrientation(): { x: number; y: number } {
         return {
@@ -280,7 +290,7 @@ class Player extends Group {
           }
           this.activeAction = newAction;  // Update the activeAction
         }
-      }
+    }
 }
 
 export default Player;

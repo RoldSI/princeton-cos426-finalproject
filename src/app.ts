@@ -16,10 +16,17 @@ import { LosingScreen, WinningScreen } from './screens/endscreen';
 import { WaitScreen } from './screens/waitscreen';
 import { SceneSelectionScreen } from './screens/sceneselectionscreen';
 import { FlowerHorror } from './scenes/FlowerHorror';
+import { Forest } from './scenes/ForestScene';
+import { Desert } from './scenes/DesertScene';
+import { Winter } from './scenes/WinterScene';
+import { Vector3 } from 'three';
 
 export const sceneMap: Map<string, typeof BaseScene> = new Map<string, typeof BaseScene>([
-    ['Base Scene', BaseScene],
-    ['Flower Horror', FlowerHorror]
+    ["None", BaseScene],
+    ['Mixed Woodlands', Forest],
+    ['Flower Horror', FlowerHorror],
+    ['Desert', Desert],
+    ['Winter Village', Winter]
 ]);
 // global state
 export const connectivity = new Connectivity();
@@ -71,11 +78,18 @@ const States: StateMap = {
             console.log("Updating state if necessary");
             if (sceneSelectionScreen.selectedScene != null) {
                 if (globalState.gamePlay == undefined) {
-                    const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate();
+                    console.log(connectivity.seed);
+                    const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate(connectivity.seed);
                     globalState.scene = scene;
-                    const startPositions = scene.getStartPositions();
-                    const playerA = new Player(startPositions[0], true);
-                    const playerB = new Player(startPositions[1], false);
+                    let startPositions = scene.getStartPositions();
+                    let playerA = new Player(startPositions[0], true);
+                    let playerB = new Player(startPositions[1], false);
+                    while(playerA.isColliding(new Vector3(startPositions[0].x, 0 , startPositions[0].z)) || playerB.isColliding(new Vector3(startPositions[1].x, 0 , startPositions[1].z))){
+                        startPositions = scene.getStartPositions();
+                        playerA = new Player(startPositions[0], true);
+                        playerB = new Player(startPositions[1], false);
+                        console.log("Invalid position, try");
+                    }
                     connectivity.sendData({
                         type: 'init',
                         content: {

@@ -31,8 +31,8 @@ export class SplashScreen {
         // Create buttons for role selection
         const buttonA = document.createElement('button');
         const buttonB = document.createElement('button');
-        buttonA.textContent = 'Player A';
-        buttonB.textContent = 'Player B';
+        buttonA.textContent = 'Join Lobby';
+        buttonB.textContent = 'Create Lobby';
         buttonA.style.margin = '10px';
         buttonB.style.margin = '10px';
 
@@ -44,6 +44,7 @@ export class SplashScreen {
             globalState.playerType = 'A';
             const remotePlayerId = prompt('Enter game id:');
             if (remotePlayerId) {
+                
                 connectivity.connectToPlayer(remotePlayerId);
                 this.container.removeChild(buttonA);
                 this.container.removeChild(buttonB);
@@ -65,7 +66,7 @@ export class SplashScreen {
             this.container.removeChild(buttonA);
             this.container.removeChild(buttonB);
             const notice = document.createElement('div');
-            notice.textContent = `The game id is: ${playerId}. Share this with Player A.`;
+            notice.textContent = `The game id is: ${playerId}. Share this ID for another Player to join.`;
             notice.style.color = 'white';
             this.container.appendChild(notice);
         });
