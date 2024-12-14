@@ -39,6 +39,8 @@ class Player extends Group {
         this.flashlight.rotation.set(0, Math.PI, 0);
         */
         let modelPath = new URL(`./player_model/model4.bin`, import.meta.url).href;
+        modelPath = new URL(`./player_model/FlashlightTexture.png`, import.meta.url).href;
+        modelPath = new URL(`./player_model/Diffusecolor_Texture.png`, import.meta.url).href;
         modelPath = new URL(`./player_model/model4.gltf`, import.meta.url).href;
         loader.load(modelPath, (gltf) => {
             const model = gltf.scene;

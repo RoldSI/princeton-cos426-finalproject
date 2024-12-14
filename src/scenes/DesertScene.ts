@@ -38,8 +38,8 @@ export class Desert extends BaseScene {
         scene.world.add(plane);
 
         const loader = new GLTFLoader();
-        let modelPath = new URL(`../objects/NatureModels/desert.gltf`, import.meta.url).href;
-        modelPath = new URL(`../objects/NatureModels/desert.bin`, import.meta.url).href;
+        let modelPath = new URL(`../objects/NatureModels/desert.bin`, import.meta.url).href;
+        modelPath = new URL(`../objects/NatureModels/desert.gltf`, import.meta.url).href;
         const rng = seedrandom(String(seed));
 
         loader.load(modelPath, (gltf) => {
