@@ -37,7 +37,7 @@ export class FlowerHorror extends BaseScene {
 
         // We reuse the grass from the forest
         const loader = new GLTFLoader();
-        const modelPath = new URL(`../objects/NatureModels/nature2.gltf`, import.meta.url).href;
+        const modelPath = new URL(`/NatureModels/nature2.gltf`, import.meta.url).href;
         
         loader.load(modelPath, (gltf) => {
             const model = gltf.scene;

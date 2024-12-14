@@ -38,8 +38,8 @@ export class Forest extends BaseScene {
         scene.world.add(plane);
 
         const loader = new GLTFLoader();
-        let modelPath = new URL(`../objects/NatureModels/nature2.bin`, import.meta.url).href;
-        modelPath = new URL(`../objects/NatureModels/nature2.gltf`, import.meta.url).href;
+        let modelPath = new URL(`/NatureModels/nature2.bin`, import.meta.url).href;
+        modelPath = new URL(`/NatureModels/nature2.gltf`, import.meta.url).href;
         const rng = seedrandom(String(seed));
 
         loader.load(modelPath, (gltf) => {
