@@ -88,7 +88,7 @@ const States: StateMap = {
                         startPositions = scene.getStartPositions();
                         playerA = new Player(startPositions[0], true);
                         playerB = new Player(startPositions[1], false);
-                        console.log("Invalid position, try");
+                        
                     }
                     connectivity.sendData({
                         type: 'init',

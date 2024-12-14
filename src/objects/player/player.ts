@@ -196,7 +196,7 @@ class Player extends Group {
     }
 
     reposition(): void {
-        if(this.seeing && globalState.gamePlay!.player_other.seeing) {
+        if(this.seeing && this.lightIsOn && globalState.gamePlay!.player_other.lightIsOn && globalState.gamePlay!.player_other.seeing) {
             const half = globalState.scene!.getHalfSize();
             const x = Math.random() * (half*2) - half;
             const z = Math.random() * (half*2) - half;
@@ -242,9 +242,6 @@ class Player extends Group {
     
         // Check against all objects in the scene
         for (const object of globalState.scene!.collisionObjects) {
-            if(object.name.includes('solid') || object.name.includes('sphere')){ // rock collison
-
-            }
             const objectBox = new Box3().setFromObject(object);
             if (playerBox.intersectsBox(objectBox)) {
                 return true; // Collision detected

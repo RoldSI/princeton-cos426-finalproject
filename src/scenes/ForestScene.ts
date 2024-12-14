@@ -13,7 +13,7 @@ export class Forest extends BaseScene {
 
     public grass : Mesh[] = [];
     public stones : Object3D[] = []; 
-
+    public wait : boolean = true;
     public trees : Object3D[] = [];
 
 
@@ -89,7 +89,58 @@ export class Forest extends BaseScene {
             
 
 
-        
+
+            //Place Trees everywhere (and some big stones)
+            const distTrees = 5;
+            for(let x = - width/2 + distTrees/2; x <= width/2 - distTrees/2; x+= distTrees){
+                for(let z = - height/2 + distTrees/2; z <= height/2 - distTrees/2; z+= distTrees){
+                    let dx = (rng()*distTrees - distTrees/2)*0.8; 
+                    let dz =(rng()*distTrees - distTrees/2)*0.8; //0.8 to prevent trees from spawning in each other
+
+                    let i = 0;
+                    let t;
+                    let r;
+
+                    if(rng() < 0.05){ // with very small probability generate a big stone instead of big tree.
+                        i = Math.floor(rng()*scene.stones.length);
+                        t = scene.stones[i].clone();
+                        r = 2*Math.PI*rng();
+                        t.scale.set(0.15,0.15,0.15);
+                        let posx = x + dx;
+                        let posz = z + dz;
+                        t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
+                        t.rotateY(r);
+                        scene.world.add(t);
+                        scene.addCollisionObject(t);
+
+                    }
+
+                    else{
+                        i = Math.floor(rng()*scene.trees.length);
+                        t = scene.trees[i].clone(); 
+                        r = 2*Math.PI*rng();
+                        t.scale.set(0.2,0.2,0.2);
+                        let posx = x + dx;
+                        let posz = z + dz;
+                        t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
+                        t.rotateY(r);
+                        scene.add(t);
+                        let f = t.clone();
+                        f.scale.set(0.11,0.11,0.11);
+                        scene.addCollisionObject(f, false);
+                    }
+                    
+                    
+
+                    
+                    
+                    
+                    
+
+                }
+            }
+
+            scene.wait = false;
 
             const distGrass = 0.5;
             //Place Grass everywhere
@@ -134,67 +185,21 @@ export class Forest extends BaseScene {
             }
             
 
-            //Place Trees everywhere (and some big stones)
-            const distTrees = 5;
-            for(let x = - width/2 + distTrees/2; x <= width/2 - distTrees/2; x+= distTrees){
-                for(let z = - height/2 + distTrees/2; z <= height/2 - distTrees/2; z+= distTrees){
-                    let dx = (rng()*distTrees - distTrees/2)*0.8; 
-                    let dz =(rng()*distTrees - distTrees/2)*0.8; //0.8 to prevent trees from spawning in each other
-
-                    let i = 0;
-                    let t;
-                    let r;
-
-                    if(rng() < 0.05){ // with very small probability generate a big stone instead of big tree.
-                        i = Math.floor(rng()*scene.stones.length);
-                        t = scene.stones[i].clone();
-                        r = 2*Math.PI*rng();
-                        t.scale.set(0.15,0.15,0.15);
-                        let posx = x + dx;
-                        let posz = z + dz;
-                        t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
-                        t.rotateY(r);
-                        scene.world.add(t);
-                        scene.addCollisionObject(t);
-
-                    }
-
-                    else{
-                        i = Math.floor(rng()*scene.trees.length);
-                        t = scene.trees[i].clone(); 
-                        r = 2*Math.PI*rng();
-                        t.scale.set(0.2,0.2,0.2);
-                        let posx = x + dx;
-                        let posz = z + dz;
-                        t.position.set(posx , scene.getHeight(x + dx,z + dz), posz);
-                        t.rotateY(r);
-                        scene.add(t);
-                        let f = t.clone();
-                        f.scale.set(0.15,0.15,0.15);
-                        scene.addCollisionObject(f, false);
-                    }
-                    
-                    
-
-                    
-                    
-                    
-                    
-
-                }
-            }
-            
-
+            scene.wait = false;
+            console.log("finished", scene.wait);
+        
 
         });
 
-        
-
-        console.log('Game/scene generated!');
+        /*
+        while(scene.isWaiting()){ // we are tricking the js cache here
+            continue;
+            
+        }
+            */
 
         return scene;
     }
-
 
 
 }

@@ -70,6 +70,8 @@ export class GamePlay {
         const delta = (timeStamp - this.previousTime) / 1000; // Convert ms to seconds
         this.previousTime = timeStamp;
 
+
+
         const forward = new Vector3(0, 0, -1).applyQuaternion(this.player.quaternion); // Forward direction
         const right = new Vector3(1, 0, 0).applyQuaternion(this.player.quaternion); // Right direction
         const positionUpdate = new Vector3();
@@ -79,7 +81,7 @@ export class GamePlay {
         if (this.keys.d) positionUpdate.add(right.multiplyScalar(this.movementSpeed * delta));
         
         // Flashlight 
-        this.handleLights();
+        
 
         this.player.modifyPosition(positionUpdate);
         this.playerDot.position.set(this.player.position.x, 0, this.player.position.z);
@@ -230,6 +232,8 @@ export class GamePlay {
             this.player_other.animationMixer.update(delta);
         }
 
+        //check which lights are on/off
+        this.handleLights();
 
         this.renderer.render(this.scene, this.player.camera);
         this.minimapRenderer.render(this.minimapScene, this.minimapCamera);
