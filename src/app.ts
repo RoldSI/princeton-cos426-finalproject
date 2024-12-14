@@ -19,6 +19,7 @@ import { FlowerHorror } from './scenes/FlowerHorror';
 import { Forest } from './scenes/ForestScene';
 import { Desert } from './scenes/DesertScene';
 import { Winter } from './scenes/WinterScene';
+import { Vector3 } from 'three';
 
 export const sceneMap: Map<string, typeof BaseScene> = new Map<string, typeof BaseScene>([
     ["None", BaseScene],
@@ -80,9 +81,15 @@ const States: StateMap = {
                     console.log(connectivity.seed);
                     const scene = sceneMap.get(sceneSelectionScreen.selectedScene)!.generate(connectivity.seed);
                     globalState.scene = scene;
-                    const startPositions = scene.getStartPositions();
-                    const playerA = new Player(startPositions[0], true);
-                    const playerB = new Player(startPositions[1], false);
+                    let startPositions = scene.getStartPositions();
+                    let playerA = new Player(startPositions[0], true);
+                    let playerB = new Player(startPositions[1], false);
+                    while(playerA.isColliding(new Vector3(startPositions[0].x, 0 , startPositions[0].z)) || playerB.isColliding(new Vector3(startPositions[1].x, 0 , startPositions[1].z))){
+                        startPositions = scene.getStartPositions();
+                        playerA = new Player(startPositions[0], true);
+                        playerB = new Player(startPositions[1], false);
+                        console.log("Invalid position, try");
+                    }
                     connectivity.sendData({
                         type: 'init',
                         content: {

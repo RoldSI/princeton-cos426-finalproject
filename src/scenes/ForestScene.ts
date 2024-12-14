@@ -193,11 +193,8 @@ export class Forest extends BaseScene {
         console.log('Game/scene generated!');
 
         return scene;
-   
-   
-    
-
     }
+
 
 
 }

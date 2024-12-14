@@ -162,9 +162,6 @@ export class Desert extends BaseScene {
 
 
         return scene;
-   
-   
-    
 
     }
 

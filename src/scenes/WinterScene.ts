@@ -167,6 +167,7 @@ export class Winter extends BaseScene {
                             f.scale.set(2,2,2);
                         }
                         scene.addCollisionObject(f, false);
+                        
                     }
 
                 }
@@ -186,6 +187,8 @@ export class Winter extends BaseScene {
     
 
     }
+
+    
 
 
 }

@@ -235,7 +235,7 @@ class Player extends Group {
         }
     }
 
-    private isColliding(newPosition: Vector3): boolean {
+     isColliding(newPosition: Vector3): boolean {
         // Create a bounding box for the player at the new position
         const playerBox = new Box3().setFromObject(this);
         playerBox.translate(newPosition.sub(this.position)); // Adjust bounding box to new position
