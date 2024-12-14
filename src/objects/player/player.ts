@@ -2,7 +2,7 @@ import { AnimationMixer, AnimationAction, Group, PerspectiveCamera, AudioListene
 import BasicFlashlight from '../../lights/basicFlashlight';
 import { connectivity, gameStateMachine, globalState } from '../../app';
 
-import MODEL from './player_model/model4.gltf?url';
+// import MODEL from './player_model/model4.gltf?url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class Player extends Group {
@@ -38,7 +38,9 @@ class Player extends Group {
         this.flashlight.position.set(-2.2, 6.5, 2.8);
         this.flashlight.rotation.set(0, Math.PI, 0);
         */
-        loader.load(MODEL, (gltf) => {
+        let modelPath = new URL(`./player_model/model4.bin`, import.meta.url).href;
+        modelPath = new URL(`./player_model/model4.gltf`, import.meta.url).href;
+        loader.load(modelPath, (gltf) => {
             const model = gltf.scene;
             // const lanternaCylinder = model.children[0] // Idle
             //     .children[1] // spine_001

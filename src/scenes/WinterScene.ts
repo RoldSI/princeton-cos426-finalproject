@@ -39,7 +39,8 @@ export class Winter extends BaseScene {
 
         const loader = new GLTFLoader();
         const smallStuff = new URL(`../objects/NatureModels/desert.gltf`, import.meta.url).href;
-        const modelPath = new URL(`../objects/NatureModels/winter.gltf`, import.meta.url).href;
+        let modelPath = new URL(`../objects/NatureModels/winter.bin`, import.meta.url).href;
+        modelPath = new URL(`../objects/NatureModels/winter.gltf`, import.meta.url).href;
         const rng = seedrandom(String(seed));
 
         loader.load(smallStuff, (gltf) => {
