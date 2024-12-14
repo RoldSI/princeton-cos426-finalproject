@@ -40,17 +40,17 @@ class Player extends Group {
         */
         loader.load(MODEL, (gltf) => {
             const model = gltf.scene;
-            const lanternaCylinder = model.children[0] // Idle
-                .children[1] // spine_001
-                .children[0] // spine_002
-                .children[0] // spine_003
-                .children[1] // shoulder_R
-                .children[0] // arm_R_upper
-                .children[0] // arm_R_lower
-                .children[0] // hand_R
-                .children[0] // finger1_R
-                .children[0] // finger1_R_001
-                .children[1];
+            // const lanternaCylinder = model.children[0] // Idle
+            //     .children[1] // spine_001
+            //     .children[0] // spine_002
+            //     .children[0] // spine_003
+            //     .children[1] // shoulder_R
+            //     .children[0] // arm_R_upper
+            //     .children[0] // arm_R_lower
+            //     .children[0] // hand_R
+            //     .children[0] // finger1_R
+            //     .children[0] // finger1_R_001
+            //     .children[1];
             //lanternaCylinder.add(this.flashlight);
             model.scale.set(0.12,0.12,0.12); // adjusting size/rotation as needed (size might) 
             model.rotation.y = Math.PI*33/32;       
